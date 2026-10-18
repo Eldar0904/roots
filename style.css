@@ -586,3 +586,55 @@ to{opacity:1;transform:translateY(0)}
 .habit-row,.content.transition,.done .check{animation:none}.habit-row.changed .check,.aspect-segment.changed i{animation:habit-confirm .38s cubic-bezier(.22,1,.36,1)}.aspect-segment.changed{animation:segment-confirm .38s cubic-bezier(.22,1,.36,1)}.nav-item{transition:background-color .22s ease,color .22s ease}.stats article{transition:border-color .25s ease}.mini-progress i{transition:width .4s cubic-bezier(.22,1,.36,1)}
 @keyframes habit-confirm{0%{transform:scale(.7)}55%{transform:scale(1.16)}100%{transform:scale(1)}}@keyframes segment-confirm{0%{filter:brightness(1.35)}100%{filter:brightness(1)}}
 @media(prefers-reduced-motion:reduce){.habit-row.changed .check,.aspect-segment.changed i,.aspect-segment.changed{animation:none}.nav-item,.stats article,.mini-progress i{transition:none}}
+
+/* One day is two equal vertical halves. Each half has one full-width row per habit. */
+.day-map{grid-template-columns:repeat(2,minmax(0,1fr));gap:0;min-height:0}
+.aspect-panel{border-radius:0;min-width:0}
+.aspect-panel.aspect-soil{border-radius:8px 0 0 8px;border-right:0}
+.aspect-panel.aspect-green{border-radius:0 8px 8px 0}
+.aspect-label{min-height:42px}
+.aspect-segments{display:flex;flex-direction:column;min-height:170px}
+.aspect-segment{width:100%;min-height:44px;flex:1;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;border-right:0;border-bottom:1px solid #5d4a3b;padding:9px 12px;font-size:11px}
+.aspect-segment:last-child{border-bottom:0}
+.aspect-green .aspect-segment{border-right:0;border-bottom-color:#306744}
+.aspect-segment i{flex:none}
+.aspect-segment span{overflow-wrap:anywhere}
+.aspect-empty{min-height:88px}
+.report-legend .report-soil::before{background:#a86f48}
+.report-legend .report-green::before{background:#5b9b70}
+.report-boxes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;width:100%;height:77px;margin-top:9px;border:1px solid #36473b;border-radius:5px;overflow:hidden}
+.report-group{display:flex;flex-direction:column;gap:0;min-width:0;padding:0;border-right:1px solid #526055}
+.report-group:last-child{border-right:0}
+.report-box{display:block;flex:1;width:100%;min-height:0;border:0;border-bottom:1px solid #675240;border-radius:0;background:#322820}
+.report-box:last-child{border-bottom:0}
+.report-group.report-green .report-box{border-color:#396147;background:#193624}
+.report-box.done{background:#b57c53;border:0;border-bottom:1px solid #675240}
+.report-group.report-green .report-box.done{background:#69a77a;border-color:#396147}
+.report-group.empty{background:#25251e}
+.report-group.report-green.empty{background:#17271b}
+.planner-day,.month-planner .planner-day{align-items:stretch}
+.planner-day-name{text-align:left}
+.week-planner .planner-day{min-height:117px}
+.month-planner .planner-day{min-height:74px;padding:6px}
+.month-planner .report-boxes{height:42px;margin-top:4px;gap:0}
+.month-planner .report-group{gap:0;padding:0}
+.month-planner .report-box{width:100%;height:auto;border-radius:0}
+@media(max-width:620px){
+  #day-composition{margin-top:4px}
+  .day-map{grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+  .aspect-panel{min-height:0;border-radius:0}
+  .aspect-panel.aspect-soil{border-radius:10px 0 0 10px}
+  .aspect-panel.aspect-green{border-radius:0 10px 10px 0}
+  .aspect-label{display:block;min-height:58px;padding:10px}
+  .aspect-label strong{display:block;font-size:12px}
+  .aspect-label span{display:block;margin-top:3px;font-size:8px}
+  .aspect-segments{min-height:215px}
+  .aspect-segment{min-height:44px;flex:1;flex-direction:row;gap:6px;padding:7px 6px;font-size:10px}
+  .aspect-segment i{width:18px;height:18px}
+  .week-planner .planner-day{min-height:116px}
+  .week-planner .report-boxes{height:70px;margin-top:8px}
+  .month-planner .planner-day{min-height:69px;padding:4px}
+  .month-planner .report-boxes{height:42px;margin-top:4px;gap:0}
+  .month-planner .report-group{gap:0;padding:0}
+  .month-planner .report-box{width:100%;height:auto}
+}

@@ -589,13 +589,65 @@ to{opacity:1;transform:translateY(0)}
 .habit-row,.content.transition,.done .check{animation:none}.habit-row.changed .check,.aspect-segment.changed i{animation:habit-confirm .38s cubic-bezier(.22,1,.36,1)}.aspect-segment.changed{animation:segment-confirm .38s cubic-bezier(.22,1,.36,1)}.nav-item{transition:background-color .22s ease,color .22s ease}.stats article{transition:border-color .25s ease}.mini-progress i{transition:width .4s cubic-bezier(.22,1,.36,1)}
 @keyframes habit-confirm{0%{transform:scale(.7)}55%{transform:scale(1.16)}100%{transform:scale(1)}}@keyframes segment-confirm{0%{filter:brightness(1.35)}100%{filter:brightness(1)}}
 @media(prefers-reduced-motion:reduce){.habit-row.changed .check,.aspect-segment.changed i,.aspect-segment.changed{animation:none}.nav-item,.stats article,.mini-progress i{transition:none}}
+
+/* One day is two equal vertical halves. Each half has one full-width row per habit. */
+.day-map{grid-template-columns:repeat(2,minmax(0,1fr));gap:0;min-height:0}
+.aspect-panel{border-radius:0;min-width:0}
+.aspect-panel.aspect-soil{border-radius:8px 0 0 8px;border-right:0}
+.aspect-panel.aspect-green{border-radius:0 8px 8px 0}
+.aspect-label{min-height:42px}
+.aspect-segments{display:flex;flex-direction:column;min-height:170px}
+.aspect-segment{width:100%;min-height:44px;flex:1;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;border-right:0;border-bottom:1px solid #5d4a3b;padding:9px 12px;font-size:11px}
+.aspect-segment:last-child{border-bottom:0}
+.aspect-green .aspect-segment{border-right:0;border-bottom-color:#306744}
+.aspect-segment i{flex:none}
+.aspect-segment span{overflow-wrap:anywhere}
+.aspect-empty{min-height:88px}
+.report-legend .report-soil::before{background:#a86f48}
+.report-legend .report-green::before{background:#5b9b70}
+.report-boxes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;width:100%;height:77px;margin-top:9px;border:1px solid #36473b;border-radius:5px;overflow:hidden}
+.report-group{display:flex;flex-direction:column;gap:0;min-width:0;padding:0;border-right:1px solid #526055}
+.report-group:last-child{border-right:0}
+.report-box{display:block;flex:1;width:100%;min-height:0;border:0;border-bottom:1px solid #675240;border-radius:0;background:#322820}
+.report-box:last-child{border-bottom:0}
+.report-group.report-green .report-box{border-color:#396147;background:#193624}
+.report-box.done{background:#b57c53;border:0;border-bottom:1px solid #675240}
+.report-group.report-green .report-box.done{background:#69a77a;border-color:#396147}
+.report-group.empty{background:#25251e}
+.report-group.report-green.empty{background:#17271b}
+.planner-day,.month-planner .planner-day{align-items:stretch}
+.planner-day-name{text-align:left}
+.week-planner .planner-day{min-height:117px}
+.month-planner .planner-day{min-height:74px;padding:6px}
+.month-planner .report-boxes{height:42px;margin-top:4px;gap:0}
+.month-planner .report-group{gap:0;padding:0}
+.month-planner .report-box{width:100%;height:auto;border-radius:0}
+@media(max-width:620px){
+  #day-composition{margin-top:4px}
+  .day-map{grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+  .aspect-panel{min-height:0;border-radius:0}
+  .aspect-panel.aspect-soil{border-radius:10px 0 0 10px}
+  .aspect-panel.aspect-green{border-radius:0 10px 10px 0}
+  .aspect-label{display:block;min-height:58px;padding:10px}
+  .aspect-label strong{display:block;font-size:12px}
+  .aspect-label span{display:block;margin-top:3px;font-size:8px}
+  .aspect-segments{min-height:215px}
+  .aspect-segment{min-height:44px;flex:1;flex-direction:row;gap:6px;padding:7px 6px;font-size:10px}
+  .aspect-segment i{width:18px;height:18px}
+  .week-planner .planner-day{min-height:116px}
+  .week-planner .report-boxes{height:70px;margin-top:8px}
+  .month-planner .planner-day{min-height:69px;padding:4px}
+  .month-planner .report-boxes{height:42px;margin-top:4px;gap:0}
+  .month-planner .report-group{gap:0;padding:0}
+  .month-planner .report-box{width:100%;height:auto}
+}
 </style>
 <!-- /ROOTS_STYLE --></head>
 <body>
 <aside class="sidebar"><a class="brand" href="#"><span class="brand-icon">♧</span> корни<span class="brand-dot">.</span></a><div class="tagline">МАЛЕНЬКИЕ ШАГИ. ГЛУБОКИЕ КОРНИ.</div><div class="nav-label">МОЁ ПРОСТРАНСТВО</div><nav id="navigation"><button class="nav-item active" data-period="day"><span>◷</span>Мой день</button><button class="nav-item" data-period="week"><span>▦</span>Неделя</button><button class="nav-item" data-period="month"><span>▤</span>Месяц</button><button class="nav-item" data-period="year"><span>◎</span>Год</button></nav><div class="sidebar-note"><div class="little-plant">✧<br>╱│╲</div><h3>Расти в своём ритме</h3><p>Не нужно менять всё сразу.<br>Достаточно одного шага сегодня.</p></div><div class="profile"><div class="avatar">Я</div><div><strong>Моё пространство</strong><small>Здесь начинается рост</small></div><span class="profile-flower">✿</span></div></aside>
 <main><header><div class="breadcrumb">Моё пространство <span>/</span> <b id="crumb">Мой день</b></div><div class="header-right"><span class="live-dot"></span> Сегодня — хороший день для роста</div></header><div class="content"><section class="page-heading"><div><div class="eyebrow">УКОРЕНЯЙ ХОРОШЕЕ</div><h1 id="page-title">Маленькие шаги,<br><em>большие перемены.</em></h1><p id="page-description">Освободи место для того, что делает тебя лучше.</p></div><div class="date-control"><button id="previous" aria-label="Предыдущий период">‹</button><span id="date-label"></span><button id="next" aria-label="Следующий период">›</button></div></section>
-<section class="welcome"><div class="welcome-copy"><span class="pill">ТВОЙ ПУТЬ К СЕБЕ</span><h2>Всё начинается с маленького семени.</h2><p>Каждая выполненная привычка — ещё один корень<br>твоей будущей версии. Продолжай расти.</p><div class="welcome-bottom"><span class="seed-icon">↗</span><span>Не идеально. Но каждый день.</span></div></div><div class="wild-landscape" aria-hidden="true"><span class="ridge ridge-one"></span><span class="ridge ridge-two"></span><span class="ridge ridge-three"></span><span class="wild-grass"></span><span class="wild-caption">OPEN GROUND · OPEN MIND</span></div></section>
-<section id="day-composition" hidden></section><section class="stats"><article><span class="stat-symbol olive">✓</span><div><span class="stat-label">Выполнено привычек</span><div class="stat-number"><b id="completed-count">0</b><small id="total-count"> / 0</small></div></div><span class="stat-caption">Шаг за шагом</span></article><article><span class="stat-symbol clay">↗</span><div><span class="stat-label">Прогресс периода</span><div class="stat-number"><b id="progress-number">0</b><small>%</small></div></div><div class="mini-progress"><i id="progress-bar"></i></div></article><article><span class="stat-symbol sand">♧</span><div><span class="stat-label">Серия дней</span><div class="stat-number"><b id="streak">0</b><small id="streak-unit"> дней</small></div></div><span class="stat-caption">Твоя устойчивость</span></article></section>
+<section id="day-composition" hidden></section><section class="welcome"><div class="welcome-copy"><span class="pill">ТВОЙ ПУТЬ К СЕБЕ</span><h2>Всё начинается с маленького семени.</h2><p>Каждая выполненная привычка — ещё один корень<br>твоей будущей версии. Продолжай расти.</p><div class="welcome-bottom"><span class="seed-icon">↗</span><span>Не идеально. Но каждый день.</span></div></div><div class="wild-landscape" aria-hidden="true"><span class="ridge ridge-one"></span><span class="ridge ridge-two"></span><span class="ridge ridge-three"></span><span class="wild-grass"></span><span class="wild-caption">OPEN GROUND · OPEN MIND</span></div></section>
+<section class="stats"><article><span class="stat-symbol olive">✓</span><div><span class="stat-label">Выполнено привычек</span><div class="stat-number"><b id="completed-count">0</b><small id="total-count"> / 0</small></div></div><span class="stat-caption">Шаг за шагом</span></article><article><span class="stat-symbol clay">↗</span><div><span class="stat-label">Прогресс периода</span><div class="stat-number"><b id="progress-number">0</b><small>%</small></div></div><div class="mini-progress"><i id="progress-bar"></i></div></article><article><span class="stat-symbol sand">♧</span><div><span class="stat-label">Серия дней</span><div class="stat-number"><b id="streak">0</b><small id="streak-unit"> дней</small></div></div><span class="stat-caption">Твоя устойчивость</span></article></section>
 <div class="workspace-grid"><section class="habit-panel"><div class="section-heading"><div><h2 id="habit-title">Мои привычки <span id="habit-badge">0</span></h2><p>Забота о себе складывается из простых вещей</p></div><button class="primary" id="add-habit">＋ <span>Добавить привычку</span></button></div><div class="filters"><button class="selected" data-filter="all">Все привычки</button><button data-filter="pending">В процессе</button><button data-filter="done">Выполнены</button><span id="habit-period">НА СЕГОДНЯ</span></div><div id="period-planner" hidden></div><div id="habits"><div class="habit-row"><button class="check" aria-label="Выполнить: Стакан воды после пробуждения">✓</button><span class="habit-icon health">♧</span><div class="habit-info"><div class="habit-name">Стакан воды после пробуждения</div><div class="habit-detail">Начать день с заботы о теле · 2 минуты</div></div><span class="category">Здоровье</span></div><div class="habit-row"><button class="check" aria-label="Выполнить: Читать 20 минут">✓</button><span class="habit-icon">▤</span><div class="habit-info"><div class="habit-name">Читать 20 минут</div><div class="habit-detail">Несколько страниц — новые мысли</div></div><span class="category">Развитие</span></div><div class="habit-row"><button class="check" aria-label="Выполнить: Прогулка на свежем воздухе">✓</button><span class="habit-icon health">♧</span><div class="habit-info"><div class="habit-name">Прогулка на свежем воздухе</div><div class="habit-detail">Замедлиться и заметить мир вокруг · 30 минут</div></div><span class="category">Здоровье</span></div></div><div class="habit-footer"><span>✧</span> Ты растёшь, даже когда этого не замечаешь.</div></section><aside class="right-column"><section class="focus-card"><div class="card-top"><span>✺</span><span id="focus-label">ФОКУС ДНЯ</span></div><h2>Что действительно<br>важно?</h2><p>Выбери главное и дай этому<br>своё внимание.</p><textarea id="focus" aria-label="Фокус периода" placeholder="Сегодня я хочу…" maxlength="1000"></textarea><span class="autosave">Сохраняется автоматически ↗</span></section><section class="quote-card"><span>“</span><blockquote>Природа не спешит,<br>но всё успевает.</blockquote><div>ЛАО-ЦЗЫ</div><div class="quote-branch">⌁</div></section></aside></div><footer><span>корни. <i>Пространство для твоего роста</i></span><span>С заботой о тебе и твоём завтра ♧</span></footer></div></main>
 <dialog id="habit-dialog"><form id="habit-form"><div class="dialog-heading"><h2>Посадим новую привычку</h2><button type="button" id="close-dialog" aria-label="Закрыть">×</button></div><p>Пусть маленькое действие станет началом перемен.</p><label>Название<input id="habit-name" required maxlength="80" placeholder="Например, читать 20 минут"></label><label>Категория<select id="habit-category"><option value="mind">Развитие</option><option value="health">Здоровье</option><option value="care">Забота о себе</option><option value="work">Дела и цели</option></select></label><label>Зона дня<select id="habit-aspect"><option value="soil">Почва — знания и внимание</option><option value="green">Рост — тело и энергия</option></select></label><label>Небольшая подсказка<input id="habit-detail" maxlength="100" placeholder="Что поможет тебе начать?"></label><div class="dialog-actions"><button type="button" id="cancel-dialog">Отмена</button><button class="primary" type="submit">Добавить привычку</button></div></form></dialog><div id="toast" role="status"></div><!-- ROOTS_SCRIPT -->
 <script>const $ = (s) => document.querySelector(s);
@@ -686,9 +738,11 @@ function habitBoxes(day, compact = false) {
   const checks = data.checks[key(day, 'day')] || {}, habits = data.habits.filter(h => h.period === 'day'), boxes = document.createElement('span');
   boxes.className = `report-boxes${compact ? ' compact' : ''}`;
   ['soil', 'green'].forEach(aspect => {
-    const group = document.createElement('span'); group.className = `report-group ${aspect}`;
-    habits.filter(h => aspectFor(h) === aspect).forEach(habit => { const box = document.createElement('i'); box.className = `report-box ${checks[habit.id] ? 'done' : ''}`; box.title = habit.name; box.setAttribute('aria-label', `${habit.name}: ${checks[habit.id] ? 'выполнено' : 'не выполнено'}`); group.append(box); });
-    if (group.childElementCount) boxes.append(group);
+    const group = document.createElement('span'); group.className = `report-group report-${aspect}`;
+    const groupHabits = habits.filter(h => aspectFor(h) === aspect);
+    groupHabits.forEach(habit => { const box = document.createElement('span'); box.className = `report-box${checks[habit.id] ? ' done' : ''}`; box.title = habit.name; group.append(box); });
+    if (!groupHabits.length) group.classList.add('empty');
+    boxes.append(group);
   });
   return boxes;
 }
@@ -708,7 +762,7 @@ function renderPlanner() {
   const heading = document.createElement('div'); heading.className = 'planner-heading';
   const title = document.createElement('h3'); title.textContent = plannerTitle();
   const note = document.createElement('span'); note.className = 'report-legend';
-  [['soil', 'Почва'], ['green', 'Рост']].forEach(([type, label]) => { const item = document.createElement('i'); item.className = type; item.textContent = label; note.append(item); }); heading.append(title, note); planner.append(heading);
+  [['soil', 'Почва'], ['green', 'Рост']].forEach(([type, label]) => { const item = document.createElement('i'); item.className = `report-${type}`; item.textContent = label; note.append(item); }); heading.append(title, note); planner.append(heading);
   const grid = document.createElement('div');
   if (period === 'week') {
     grid.className = 'planner-grid week-planner'; trackedDays().forEach(day => grid.append(dayCard(day)));
@@ -791,14 +845,30 @@ const dialog = $('#habit-dialog'); let editingHabitId = null;
 function openHabitEditor(habit = null) {
   editingHabitId = habit?.id || null; $('#habit-form').reset();
   document.querySelector('.dialog-heading h2').textContent = habit ? 'Изменить привычку' : 'Добавить привычку';
+  $('#habit-aspect').setCustomValidity('');
   if (habit) { $('#habit-name').value = habit.name; $('#habit-detail').value = habit.detail; $('#habit-category').value = habit.category; $('#habit-aspect').value = aspectFor(habit); }
   dialog.showModal(); $('#habit-name').focus();
 }
 $('#add-habit').onclick = () => openHabitEditor();
 $('#close-dialog').onclick = $('#cancel-dialog').onclick = () => dialog.close();
 dialog.addEventListener('click', e => { if (e.target === dialog) { const r = dialog.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close(); } });
-$('#habit-form').onsubmit = e => { e.preventDefault(); const name = $('#habit-name').value.trim(); if (!name) { $('#habit-name').setCustomValidity('Введите название привычки'); $('#habit-name').reportValidity(); return; } const values = { name, detail: $('#habit-detail').value.trim(), category: $('#habit-category').value, aspect: $('#habit-aspect').value }; if (editingHabitId) Object.assign(data.habits.find(h => h.id === editingHabitId), values); else data.habits.push({ id: crypto.randomUUID(), ...values, period }); filter = 'all'; document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); save(); dialog.close(); render(); toast(editingHabitId ? 'Привычка обновлена' : 'Новая привычка добавлена'); editingHabitId = null; };
+$('#habit-form').onsubmit = e => {
+  e.preventDefault();
+  const name = $('#habit-name').value.trim();
+  if (!name) { $('#habit-name').setCustomValidity('Введите название привычки'); $('#habit-name').reportValidity(); return; }
+  const values = { name, detail: $('#habit-detail').value.trim(), category: $('#habit-category').value, aspect: $('#habit-aspect').value };
+  const current = editingHabitId && data.habits.find(h => h.id === editingHabitId);
+  if ((current?.period || period) === 'day') {
+    const occupied = data.habits.filter(h => h.period === 'day' && h.id !== editingHabitId && aspectFor(h) === values.aspect).length;
+    if (occupied >= 5) { $('#habit-aspect').setCustomValidity('В каждой зоне дня может быть не более пяти привычек'); $('#habit-aspect').reportValidity(); return; }
+  }
+  if (current) Object.assign(current, values);
+  else data.habits.push({ id: crypto.randomUUID(), ...values, period });
+  filter = 'all'; document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all'));
+  save(); dialog.close(); render(); toast(editingHabitId ? 'Привычка обновлена' : 'Новая привычка добавлена'); editingHabitId = null;
+};
 $('#habit-name').addEventListener('input', () => $('#habit-name').setCustomValidity(''));
+$('#habit-aspect').addEventListener('change', () => $('#habit-aspect').setCustomValidity(''));
 render();
 </script>
 <!-- /ROOTS_SCRIPT --></body></html>

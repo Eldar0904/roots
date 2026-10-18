@@ -86,9 +86,11 @@ function habitBoxes(day, compact = false) {
   const checks = data.checks[key(day, 'day')] || {}, habits = data.habits.filter(h => h.period === 'day'), boxes = document.createElement('span');
   boxes.className = `report-boxes${compact ? ' compact' : ''}`;
   ['soil', 'green'].forEach(aspect => {
-    const group = document.createElement('span'); group.className = `report-group ${aspect}`;
-    habits.filter(h => aspectFor(h) === aspect).forEach(habit => { const box = document.createElement('i'); box.className = `report-box ${checks[habit.id] ? 'done' : ''}`; box.title = habit.name; box.setAttribute('aria-label', `${habit.name}: ${checks[habit.id] ? 'выполнено' : 'не выполнено'}`); group.append(box); });
-    if (group.childElementCount) boxes.append(group);
+    const group = document.createElement('span'); group.className = `report-group report-${aspect}`;
+    const groupHabits = habits.filter(h => aspectFor(h) === aspect);
+    groupHabits.forEach(habit => { const box = document.createElement('span'); box.className = `report-box${checks[habit.id] ? ' done' : ''}`; box.title = habit.name; group.append(box); });
+    if (!groupHabits.length) group.classList.add('empty');
+    boxes.append(group);
   });
   return boxes;
 }
@@ -108,7 +110,7 @@ function renderPlanner() {
   const heading = document.createElement('div'); heading.className = 'planner-heading';
   const title = document.createElement('h3'); title.textContent = plannerTitle();
   const note = document.createElement('span'); note.className = 'report-legend';
-  [['soil', 'Почва'], ['green', 'Рост']].forEach(([type, label]) => { const item = document.createElement('i'); item.className = type; item.textContent = label; note.append(item); }); heading.append(title, note); planner.append(heading);
+  [['soil', 'Почва'], ['green', 'Рост']].forEach(([type, label]) => { const item = document.createElement('i'); item.className = `report-${type}`; item.textContent = label; note.append(item); }); heading.append(title, note); planner.append(heading);
   const grid = document.createElement('div');
   if (period === 'week') {
     grid.className = 'planner-grid week-planner'; trackedDays().forEach(day => grid.append(dayCard(day)));
@@ -191,12 +193,28 @@ const dialog = $('#habit-dialog'); let editingHabitId = null;
 function openHabitEditor(habit = null) {
   editingHabitId = habit?.id || null; $('#habit-form').reset();
   document.querySelector('.dialog-heading h2').textContent = habit ? 'Изменить привычку' : 'Добавить привычку';
+  $('#habit-aspect').setCustomValidity('');
   if (habit) { $('#habit-name').value = habit.name; $('#habit-detail').value = habit.detail; $('#habit-category').value = habit.category; $('#habit-aspect').value = aspectFor(habit); }
   dialog.showModal(); $('#habit-name').focus();
 }
 $('#add-habit').onclick = () => openHabitEditor();
 $('#close-dialog').onclick = $('#cancel-dialog').onclick = () => dialog.close();
 dialog.addEventListener('click', e => { if (e.target === dialog) { const r = dialog.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close(); } });
-$('#habit-form').onsubmit = e => { e.preventDefault(); const name = $('#habit-name').value.trim(); if (!name) { $('#habit-name').setCustomValidity('Введите название привычки'); $('#habit-name').reportValidity(); return; } const values = { name, detail: $('#habit-detail').value.trim(), category: $('#habit-category').value, aspect: $('#habit-aspect').value }; if (editingHabitId) Object.assign(data.habits.find(h => h.id === editingHabitId), values); else data.habits.push({ id: crypto.randomUUID(), ...values, period }); filter = 'all'; document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); save(); dialog.close(); render(); toast(editingHabitId ? 'Привычка обновлена' : 'Новая привычка добавлена'); editingHabitId = null; };
+$('#habit-form').onsubmit = e => {
+  e.preventDefault();
+  const name = $('#habit-name').value.trim();
+  if (!name) { $('#habit-name').setCustomValidity('Введите название привычки'); $('#habit-name').reportValidity(); return; }
+  const values = { name, detail: $('#habit-detail').value.trim(), category: $('#habit-category').value, aspect: $('#habit-aspect').value };
+  const current = editingHabitId && data.habits.find(h => h.id === editingHabitId);
+  if ((current?.period || period) === 'day') {
+    const occupied = data.habits.filter(h => h.period === 'day' && h.id !== editingHabitId && aspectFor(h) === values.aspect).length;
+    if (occupied >= 5) { $('#habit-aspect').setCustomValidity('В каждой зоне дня может быть не более пяти привычек'); $('#habit-aspect').reportValidity(); return; }
+  }
+  if (current) Object.assign(current, values);
+  else data.habits.push({ id: crypto.randomUUID(), ...values, period });
+  filter = 'all'; document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all'));
+  save(); dialog.close(); render(); toast(editingHabitId ? 'Привычка обновлена' : 'Новая привычка добавлена'); editingHabitId = null;
+};
 $('#habit-name').addEventListener('input', () => $('#habit-name').setCustomValidity(''));
+$('#habit-aspect').addEventListener('change', () => $('#habit-aspect').setCustomValidity(''));
 render();
