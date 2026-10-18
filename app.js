@@ -30,6 +30,11 @@ function key(date = selectedDate, mode = period) {
   return `day:${localDate(d)}`;
 }
 function toast(message) { $('#toast').textContent = message; $('#toast').classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').classList.remove('visible'), 2600); }
+function animatePage() {
+  const content = document.querySelector('.content');
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  content.classList.remove('transition'); void content.offsetWidth; content.classList.add('transition');
+}
 function save() { try { localStorage.setItem('roots-v1', JSON.stringify(data)); } catch { toast('Не удалось сохранить данные. Проверьте доступ к хранилищу браузера.'); } }
 function dateLabel() {
   const d = selectedDate;
@@ -124,7 +129,7 @@ function render() {
   visible.forEach(h => {
     const row = document.createElement('div'); row.className = `habit-row${checks[h.id] ? ' done' : ''}`;
     const check = document.createElement('button'); check.className = 'check'; check.textContent = '✓'; check.setAttribute('aria-label', `${checks[h.id] ? 'Отменить выполнение' : 'Выполнить'}: ${h.name}`); check.setAttribute('aria-pressed', String(!!checks[h.id]));
-    check.onclick = () => { data.checks[key()] ||= {}; data.checks[key()][h.id] = !checks[h.id]; save(); render(); };
+    check.onclick = () => { const completed = !checks[h.id]; data.checks[key()] ||= {}; data.checks[key()][h.id] = completed; if (completed && navigator.vibrate) navigator.vibrate(10); save(); render(); toast(completed ? 'Привычка отмечена' : 'Отметка снята'); };
     const category = categories[h.category] || categories.mind;
     const icon = document.createElement('span'); icon.className = `habit-icon ${h.category}`; icon.textContent = category[1]; icon.setAttribute('aria-hidden', 'true');
     const info = document.createElement('div'); info.className = 'habit-info';
@@ -136,7 +141,7 @@ function render() {
     row.append(check, icon, info, tag, remove); list.append(row);
   });
 }
-document.querySelectorAll('[data-period]').forEach(button => button.onclick = () => { period = button.dataset.period; filter = 'all'; document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('active', b === button)); document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); render(); });
+document.querySelectorAll('[data-period]').forEach(button => button.onclick = () => { period = button.dataset.period; filter = 'all'; document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('active', b === button)); document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); animatePage(); render(); });
 document.querySelectorAll('[data-filter]').forEach(button => button.onclick = () => { filter = button.dataset.filter; document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b === button)); render(); });
 function move(direction) { const d = new Date(selectedDate); if (period === 'day' || period === 'week') d.setDate(d.getDate() + direction * (period === 'week' ? 7 : 1)); if (period === 'month') { d.setDate(1); d.setMonth(d.getMonth() + direction); } if (period === 'year') { d.setDate(1); d.setFullYear(d.getFullYear() + direction); } selectedDate = d; render(); }
 $('#previous').onclick = () => move(-1); $('#next').onclick = () => move(1);
