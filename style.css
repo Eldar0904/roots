@@ -122,16 +122,18 @@ h1 br{display:none}
 footer{border-top:1px solid var(--border);margin-top:33px;padding:22px 0;display:flex;justify-content:space-between;color:#a7ab9a;font-size:8px}
 footer>span:first-child{font:16px Georgia;color:#7c876d}
 footer i{font:8px Manrope,Arial;color:#aaae9d;margin-left:12px}
-dialog{border:1px solid #dfe3d3;border-radius:16px;padding:28px;background:#faf9f2;color:var(--ink);max-width:460px;width:calc(100% - 32px);box-shadow:0 20px 90px #303b2d30}
-dialog::backdrop{background:#303b2d66;backdrop-filter:blur(3px)}
+dialog{border:1px solid #3c5142;border-radius:16px;padding:28px;background:#19251d;color:#edf3ee;color-scheme:dark;max-width:460px;width:calc(100% - 32px);box-shadow:0 20px 90px #050b07bb}
+dialog::backdrop{background:#050b08c9;backdrop-filter:blur(3px)}
 .dialog-heading{display:flex;align-items:center;justify-content:space-between;gap:15px}
 .dialog-heading h2{font:25px Georgia;margin:0}
-.dialog-heading button{border:0;background:none;font-size:25px}
-dialog p{font-size:11px;color:#8f9682;line-height:1.8}
+.dialog-heading button{border:0;background:none;color:#c5d5c8;font-size:25px;min-width:44px;min-height:44px;cursor:pointer}
+dialog p{font-size:11px;color:#aebdb0;line-height:1.8}
 dialog label{display:block;font-size:11px;margin-top:20px}
-dialog input,dialog select{width:100%;display:block;margin-top:8px;padding:12px;border:1px solid #dce0d1;border-radius:6px;background:#fffef9;color:var(--ink)}
+dialog input,dialog select{width:100%;display:block;margin-top:8px;padding:12px;border:1px solid #455b4a;border-radius:6px;background:#101a14;color:#edf3ee;color-scheme:dark}
+dialog input::placeholder{color:#93a497}
+dialog input:focus-visible,dialog select:focus-visible{outline:2px solid #8bbb94;outline-offset:2px}
 .dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:25px}
-.dialog-actions>button:not(.primary){background:none;border:0;color:#8c967e}
+.dialog-actions>button:not(.primary){background:none;border:1px solid #455b4a;border-radius:4px;color:#d1ded3;min-height:44px;padding:0 15px;cursor:pointer}
 .empty{padding:45px 15px;text-align:center;color:#9aa18e;font-size:12px;line-height:2}
 #toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%) translateY(100px);background:#45593d;color:#fff;padding:12px 22px;border-radius:8px;opacity:0;transition:all .2s;z-index:5;font-size:12px}
 #toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
