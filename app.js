@@ -44,15 +44,80 @@ function streak() {
   while (Object.values(data.checks[key(d, 'day')] || {}).some(Boolean)) { count++; d.setDate(d.getDate() - 1); }
   return count;
 }
+function startOfWeek(date) {
+  const d = new Date(date); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d;
+}
+function daysInRange(start, end) {
+  const days = []; const cursor = new Date(start);
+  while (cursor <= end) { days.push(new Date(cursor)); cursor.setDate(cursor.getDate() + 1); }
+  return days;
+}
+function dailySummary(date) {
+  const dailyHabits = data.habits.filter(h => h.period === 'day');
+  const checks = data.checks[key(date, 'day')] || {};
+  return { done: dailyHabits.filter(h => checks[h.id]).length, total: dailyHabits.length };
+}
+function aggregate(days) {
+  return days.reduce((summary, day) => { const item = dailySummary(day); summary.done += item.done; summary.total += item.total; return summary; }, { done: 0, total: 0 });
+}
+function trackedDays() {
+  if (period === 'week') { const start = startOfWeek(selectedDate), end = new Date(start); end.setDate(end.getDate() + 6); return daysInRange(start, end); }
+  if (period === 'month') { const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1), end = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0); return daysInRange(start, end); }
+  return [];
+}
+function plannerTitle() { return period === 'week' ? 'Ежедневный прогресс недели' : period === 'month' ? 'Календарь выполнения' : 'Прогресс по месяцам'; }
+function dayCard(day, compact = false) {
+  const stat = dailySummary(day), card = document.createElement('button');
+  card.className = `planner-day${stat.done ? ' has-progress' : ''}${localDate(day) === localDate(new Date()) ? ' today' : ''}`;
+  card.type = 'button'; card.setAttribute('aria-label', `${day.toLocaleDateString('ru-RU')}: ${stat.done} из ${stat.total}`);
+  const name = document.createElement('span'); name.className = 'planner-day-name'; name.textContent = compact ? String(day.getDate()) : day.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
+  const count = document.createElement('strong'); count.textContent = `${stat.done}/${stat.total}`;
+  const bar = document.createElement('i'); bar.style.width = `${stat.total ? stat.done / stat.total * 100 : 0}%`;
+  card.append(name, count, bar);
+  card.onclick = () => { selectedDate = new Date(day); period = 'day'; filter = 'all'; document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('active', b.dataset.period === 'day')); document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); render(); };
+  return card;
+}
+function renderPlanner() {
+  const planner = $('#period-planner'); planner.replaceChildren();
+  if (period === 'day') { planner.hidden = true; return; }
+  planner.hidden = false;
+  const heading = document.createElement('div'); heading.className = 'planner-heading';
+  const title = document.createElement('h3'); title.textContent = plannerTitle();
+  const note = document.createElement('span'); note.textContent = 'Отметки ежедневных привычек'; heading.append(title, note); planner.append(heading);
+  const grid = document.createElement('div');
+  if (period === 'week') {
+    grid.className = 'planner-grid week-planner'; trackedDays().forEach(day => grid.append(dayCard(day)));
+  } else if (period === 'month') {
+    grid.className = 'planner-grid month-planner';
+    const first = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+    ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].forEach(name => { const label = document.createElement('span'); label.className = 'planner-weekday'; label.textContent = name; grid.append(label); });
+    for (let i = 0; i < (first.getDay() + 6) % 7; i++) { const spacer = document.createElement('span'); spacer.className = 'planner-spacer'; grid.append(spacer); }
+    trackedDays().forEach(day => grid.append(dayCard(day, true)));
+  } else {
+    grid.className = 'planner-grid year-planner';
+    for (let month = 0; month < 12; month++) {
+      const start = new Date(selectedDate.getFullYear(), month, 1), end = new Date(selectedDate.getFullYear(), month + 1, 0), stat = aggregate(daysInRange(start, end));
+      const card = document.createElement('div'); card.className = 'planner-month';
+      const name = document.createElement('span'); name.textContent = start.toLocaleDateString('ru-RU', { month: 'short' }).replace('.', '');
+      const count = document.createElement('strong'); count.textContent = `${stat.done}/${stat.total}`;
+      const bar = document.createElement('i'); bar.style.width = `${stat.total ? stat.done / stat.total * 100 : 0}%`;
+      card.append(name, count, bar); grid.append(card);
+    }
+  }
+  planner.append(grid);
+}
 function render() {
   const meta = periods[period], checks = data.checks[key()] || {}, habits = data.habits.filter(h => h.period === period);
-  const done = habits.filter(h => checks[h.id]).length, percent = habits.length ? Math.round(done / habits.length * 100) : 0;
+  const specialDone = habits.filter(h => checks[h.id]).length, overview = period === 'day' ? { done: specialDone, total: habits.length } : period === 'year' ? aggregate(Array.from({ length: 12 }, (_, month) => new Date(selectedDate.getFullYear(), month, 1)).flatMap(start => daysInRange(start, new Date(start.getFullYear(), start.getMonth() + 1, 0)))) : aggregate(trackedDays());
+  const done = overview.done, total = overview.total, percent = total ? Math.round(done / total * 100) : 0;
   $('#crumb').textContent = meta[0]; $('#habit-title').firstChild.textContent = `${meta[1]} `; $('#habit-badge').textContent = habits.length;
   $('#habit-period').textContent = meta[2]; $('#focus-label').textContent = meta[3]; $('#focus').value = data.focus[key()] || '';
   $('#focus').placeholder = { day:'Сегодня я хочу…',week:'На этой неделе я хочу…',month:'В этом месяце я хочу…',year:'В этом году я хочу…' }[period];
-  $('#date-label').textContent = dateLabel(); $('#completed-count').textContent = done; $('#total-count').textContent = ` / ${habits.length}`;
+  $('.stats .stat-label').textContent = period === 'day' ? 'Выполнено привычек' : `Выполнено за ${period === 'week' ? 'неделю' : period === 'month' ? 'месяц' : 'год'}`;
+  $('#date-label').textContent = dateLabel(); $('#completed-count').textContent = done; $('#total-count').textContent = ` / ${total}`;
   $('#progress-number').textContent = percent; $('#progress-bar').style.width = `${percent}%`; const n = streak(); $('#streak').textContent = n;
   $('#streak-unit').textContent = ` ${n % 10 === 1 && n % 100 !== 11 ? 'день' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'дня' : 'дней'}`;
+  renderPlanner();
   const list = $('#habits'); list.replaceChildren();
   const visible = habits.filter(h => filter === 'all' || (filter === 'done' ? checks[h.id] : !checks[h.id]));
   if (!visible.length) { const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = !habits.length ? 'Здесь вырастет что-то хорошее. Добавь первую привычку ♧' : filter === 'pending' ? 'Всё выполнено. Время выдохнуть ♧' : 'Пока нет выполненных привычек. Начни с маленького шага.'; list.append(empty); }
