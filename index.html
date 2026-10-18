@@ -575,24 +575,27 @@ to{opacity:1;transform:translateY(0)}
 }
 
 @media(max-width:620px){.week-planner{display:flex;overflow-x:auto;gap:9px;padding-bottom:4px;scroll-snap-type:x mandatory}.week-planner .planner-day{flex:0 0 108px;min-height:83px;padding:12px;border-radius:9px;scroll-snap-align:start}.planner-day-name{font-size:10px}.planner-day strong{font-size:17px;margin-top:9px}.month-planner{gap:5px}.month-planner .planner-day{min-height:50px;border-radius:6px;padding:6px}.month-planner .planner-day-name{font-size:10px}.month-planner .planner-day strong{font-size:9px;margin-top:6px}.planner-weekday{font-size:8px}.planner-spacer{min-height:50px}.year-planner{gap:8px}.planner-month{min-height:61px;border-radius:8px;padding:10px}.planner-month span{font-size:10px}.planner-month strong{font-size:14px}}
+
+/* Daily split: soil for learning and reflection, green for the body. */
+#day-composition{margin:0 0 20px;padding:20px 21px;border:1px solid #2d4134;border-radius:8px;background:#141c17}.composition-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin-bottom:15px}.composition-heading h2{font:22px Georgia,serif;color:#edf3ee;margin:0}.composition-heading p{font-size:9px;color:#98a69d;margin:7px 0 0}.composition-total{font-size:9px;color:#b3c3b7;background:#203128;padding:6px 8px;border-radius:3px;white-space:nowrap}.day-map{display:grid;grid-template-columns:3fr 1fr;gap:8px;min-height:132px}.aspect-panel{overflow:hidden;border-radius:5px;display:flex;flex-direction:column;min-width:0}.aspect-panel.aspect-soil{background:#372c24;border:1px solid #594638}.aspect-panel.aspect-green{background:#173724;border:1px solid #2e6844}.aspect-label{display:flex;justify-content:space-between;align-items:center;padding:11px 13px 9px}.aspect-label strong{font-size:11px;letter-spacing:.4px;color:#f2e8dd}.aspect-green .aspect-label strong{color:#def0e2}.aspect-label span{font-size:8px;color:#baa999}.aspect-green .aspect-label span{color:#9dc7a8}.aspect-segments{display:flex;flex:1;min-height:76px}.aspect-segment{flex:1;min-width:0;border:0;border-top:1px solid #5d4a3b;border-right:1px solid #5d4a3b;background:transparent;color:#eaded1;padding:10px 8px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;gap:10px;font-size:10px;font-weight:600;line-height:1.35;transition:background .2s,transform .2s}.aspect-segment:last-child{border-right:0}.aspect-green .aspect-segment{border-color:#306744;color:#d9efdf}.aspect-segment:hover{background:rgba(255,255,255,.08)}.aspect-segment:active{transform:scale(.97)}.aspect-segment i{font-style:normal;display:grid;place-items:center;width:19px;height:19px;border:1px solid currentColor;border-radius:3px;color:transparent}.aspect-segment.done{background:rgba(255,255,255,.12)}.aspect-segment.done i{background:#b78357;border-color:#b78357;color:#fff}.aspect-green .aspect-segment.done i{background:#69a67a;border-color:#69a67a}.aspect-empty{display:grid;place-items:center;width:100%;color:#bba893;font-size:9px}
+@media(max-width:620px){#day-composition{margin:0 0 22px;padding:18px;border-radius:14px}.composition-heading{align-items:flex-start;margin-bottom:14px}.composition-heading h2{font-size:24px}.composition-heading p{font-size:10px;line-height:1.5;max-width:180px}.composition-total{font-size:9px;padding:7px;align-self:flex-end}.day-map{grid-template-columns:1fr;gap:10px;min-height:0}.aspect-panel{min-height:125px;border-radius:11px}.aspect-label{padding:12px 14px}.aspect-label strong{font-size:13px}.aspect-label span{font-size:9px}.aspect-segments{min-height:75px}.aspect-segment{padding:11px 10px;font-size:11px}.aspect-segment i{width:22px;height:22px;border-radius:5px}}
 </style>
 <!-- /ROOTS_STYLE --></head>
 <body>
 <aside class="sidebar"><a class="brand" href="#"><span class="brand-icon">♧</span> корни<span class="brand-dot">.</span></a><div class="tagline">МАЛЕНЬКИЕ ШАГИ. ГЛУБОКИЕ КОРНИ.</div><div class="nav-label">МОЁ ПРОСТРАНСТВО</div><nav id="navigation"><button class="nav-item active" data-period="day"><span>◷</span>Мой день</button><button class="nav-item" data-period="week"><span>▦</span>Неделя</button><button class="nav-item" data-period="month"><span>▤</span>Месяц</button><button class="nav-item" data-period="year"><span>◎</span>Год</button></nav><div class="sidebar-note"><div class="little-plant">✧<br>╱│╲</div><h3>Расти в своём ритме</h3><p>Не нужно менять всё сразу.<br>Достаточно одного шага сегодня.</p></div><div class="profile"><div class="avatar">Я</div><div><strong>Моё пространство</strong><small>Здесь начинается рост</small></div><span class="profile-flower">✿</span></div></aside>
 <main><header><div class="breadcrumb">Моё пространство <span>/</span> <b id="crumb">Мой день</b></div><div class="header-right"><span class="live-dot"></span> Сегодня — хороший день для роста</div></header><div class="content"><section class="page-heading"><div><div class="eyebrow">УКОРЕНЯЙ ХОРОШЕЕ</div><h1 id="page-title">Маленькие шаги,<br><em>большие перемены.</em></h1><p id="page-description">Освободи место для того, что делает тебя лучше.</p></div><div class="date-control"><button id="previous" aria-label="Предыдущий период">‹</button><span id="date-label"></span><button id="next" aria-label="Следующий период">›</button></div></section>
 <section class="welcome"><div class="welcome-copy"><span class="pill">ТВОЙ ПУТЬ К СЕБЕ</span><h2>Всё начинается с маленького семени.</h2><p>Каждая выполненная привычка — ещё один корень<br>твоей будущей версии. Продолжай расти.</p><div class="welcome-bottom"><span class="seed-icon">↗</span><span>Не идеально. Но каждый день.</span></div></div><div class="plant-art" aria-hidden="true"><div class="sun"></div><div class="art-ring ring-one"></div><div class="art-ring ring-two"></div><div class="stem"></div><i class="leaf l1"></i><i class="leaf l2"></i><i class="leaf l3"></i><i class="leaf l4"></i><i class="leaf l5"></i><div class="soil"></div><div class="pot"></div><span class="art-caption">GROW AT YOUR OWN PACE</span></div></section>
-<section class="stats"><article><span class="stat-symbol olive">✓</span><div><span class="stat-label">Выполнено привычек</span><div class="stat-number"><b id="completed-count">0</b><small id="total-count"> / 0</small></div></div><span class="stat-caption">Шаг за шагом</span></article><article><span class="stat-symbol clay">↗</span><div><span class="stat-label">Прогресс периода</span><div class="stat-number"><b id="progress-number">0</b><small>%</small></div></div><div class="mini-progress"><i id="progress-bar"></i></div></article><article><span class="stat-symbol sand">♧</span><div><span class="stat-label">Серия дней</span><div class="stat-number"><b id="streak">0</b><small id="streak-unit"> дней</small></div></div><span class="stat-caption">Твоя устойчивость</span></article></section>
+<section id="day-composition" hidden></section><section class="stats"><article><span class="stat-symbol olive">✓</span><div><span class="stat-label">Выполнено привычек</span><div class="stat-number"><b id="completed-count">0</b><small id="total-count"> / 0</small></div></div><span class="stat-caption">Шаг за шагом</span></article><article><span class="stat-symbol clay">↗</span><div><span class="stat-label">Прогресс периода</span><div class="stat-number"><b id="progress-number">0</b><small>%</small></div></div><div class="mini-progress"><i id="progress-bar"></i></div></article><article><span class="stat-symbol sand">♧</span><div><span class="stat-label">Серия дней</span><div class="stat-number"><b id="streak">0</b><small id="streak-unit"> дней</small></div></div><span class="stat-caption">Твоя устойчивость</span></article></section>
 <div class="workspace-grid"><section class="habit-panel"><div class="section-heading"><div><h2 id="habit-title">Мои привычки <span id="habit-badge">0</span></h2><p>Забота о себе складывается из простых вещей</p></div><button class="primary" id="add-habit">＋ <span>Добавить привычку</span></button></div><div class="filters"><button class="selected" data-filter="all">Все привычки</button><button data-filter="pending">В процессе</button><button data-filter="done">Выполнены</button><span id="habit-period">НА СЕГОДНЯ</span></div><div id="period-planner" hidden></div><div id="habits"><div class="habit-row"><button class="check" aria-label="Выполнить: Стакан воды после пробуждения">✓</button><span class="habit-icon health">♧</span><div class="habit-info"><div class="habit-name">Стакан воды после пробуждения</div><div class="habit-detail">Начать день с заботы о теле · 2 минуты</div></div><span class="category">Здоровье</span></div><div class="habit-row"><button class="check" aria-label="Выполнить: Читать 20 минут">✓</button><span class="habit-icon">▤</span><div class="habit-info"><div class="habit-name">Читать 20 минут</div><div class="habit-detail">Несколько страниц — новые мысли</div></div><span class="category">Развитие</span></div><div class="habit-row"><button class="check" aria-label="Выполнить: Прогулка на свежем воздухе">✓</button><span class="habit-icon health">♧</span><div class="habit-info"><div class="habit-name">Прогулка на свежем воздухе</div><div class="habit-detail">Замедлиться и заметить мир вокруг · 30 минут</div></div><span class="category">Здоровье</span></div></div><div class="habit-footer"><span>✧</span> Ты растёшь, даже когда этого не замечаешь.</div></section><aside class="right-column"><section class="focus-card"><div class="card-top"><span>✺</span><span id="focus-label">ФОКУС ДНЯ</span></div><h2>Что действительно<br>важно?</h2><p>Выбери главное и дай этому<br>своё внимание.</p><textarea id="focus" aria-label="Фокус периода" placeholder="Сегодня я хочу…" maxlength="1000"></textarea><span class="autosave">Сохраняется автоматически ↗</span></section><section class="quote-card"><span>“</span><blockquote>Природа не спешит,<br>но всё успевает.</blockquote><div>ЛАО-ЦЗЫ</div><div class="quote-branch">⌁</div></section></aside></div><footer><span>корни. <i>Пространство для твоего роста</i></span><span>С заботой о тебе и твоём завтра ♧</span></footer></div></main>
 <dialog id="habit-dialog"><form id="habit-form"><div class="dialog-heading"><h2>Посадим новую привычку</h2><button type="button" id="close-dialog" aria-label="Закрыть">×</button></div><p>Пусть маленькое действие станет началом перемен.</p><label>Название<input id="habit-name" required maxlength="80" placeholder="Например, читать 20 минут"></label><label>Категория<select id="habit-category"><option value="mind">Развитие</option><option value="health">Здоровье</option><option value="care">Забота о себе</option><option value="work">Дела и цели</option></select></label><label>Небольшая подсказка<input id="habit-detail" maxlength="100" placeholder="Что поможет тебе начать?"></label><div class="dialog-actions"><button type="button" id="cancel-dialog">Отмена</button><button class="primary" type="submit">Добавить привычку</button></div></form></dialog><div id="toast" role="status"></div><!-- ROOTS_SCRIPT -->
 <script>const $ = (s) => document.querySelector(s);
 const categories = { mind: ['Развитие', '▤'], health: ['Здоровье', '♧'], care: ['Забота о себе', '☼'], work: ['Дела и цели', '◇'] };
 const periods = { day: ['Мой день', 'Мои привычки', 'НА СЕГОДНЯ', 'ФОКУС ДНЯ'], week: ['Неделя', 'Привычки недели', 'НА НЕДЕЛЮ', 'ФОКУС НЕДЕЛИ'], month: ['Месяц', 'Привычки месяца', 'НА МЕСЯЦ', 'ФОКУС МЕСЯЦА'], year: ['Год', 'Привычки года', 'НА ГОД', 'ФОКУС ГОДА'] };
 const defaults = [
-  ['Стакан воды после пробуждения', 'Начать день с заботы о теле · 2 минуты', 'health', 'day'],
-  ['Читать 20 минут', 'Несколько страниц — новые мысли', 'mind', 'day'],
-  ['Прогулка на свежем воздухе', 'Замедлиться и заметить мир вокруг · 30 минут', 'health', 'day'],
-  ['Время без экрана перед сном', 'Подарить себе спокойный вечер · 1 час', 'care', 'day'],
-  ['Записать три благодарности', 'Увидеть хорошее в простых вещах · 5 минут', 'care', 'day'],
+  ['Читать 20 минут', 'Внимание для новых идей · 20 минут', 'mind', 'day', 'soil'],
+  ['Дневник', 'Зафиксировать мысли и наблюдения · 5 минут', 'care', 'day', 'soil'],
+  ['Практика арабского', 'Несколько новых слов или упражнение · 15 минут', 'mind', 'day', 'soil'],
+  ['Тренировка', 'Движение для энергии и силы · 30 минут', 'health', 'day', 'green'],
   ['Спланировать следующую неделю', 'Выбрать три главных направления', 'work', 'week'],
   ['Устроить вечер с близкими', 'Время для тех, кто важен', 'care', 'week'],
   ['Три тренировки за неделю', 'Укреплять тело в комфортном ритме', 'health', 'week'],
@@ -602,7 +605,7 @@ const defaults = [
   ['Освоить новый навык', 'Маленькая практика каждую неделю', 'mind', 'year'],
   ['Пройти ежегодный чекап', 'Выделить время для здоровья', 'health', 'year'],
   ['Отправиться в путешествие', 'Собрать новые впечатления', 'care', 'year']
-].map(([name, detail, category, period], i) => ({ id: `seed-${i}`, name, detail, category, period }));
+].map(([name, detail, category, period, aspect], i) => ({ id: `seed-${i}`, name, detail, category, period, aspect }));
 let data;
 try { data = JSON.parse(localStorage.getItem('roots-v1')); } catch {}
 if (!data || !Array.isArray(data.habits) || !data.checks || !data.focus) data = { habits: defaults, checks: {}, focus: {} };
@@ -647,6 +650,13 @@ function dailySummary(date) {
   const dailyHabits = data.habits.filter(h => h.period === 'day');
   const checks = data.checks[key(date, 'day')] || {};
   return { done: dailyHabits.filter(h => checks[h.id]).length, total: dailyHabits.length };
+}
+function aspectFor(habit) { return habit.aspect || (habit.category === 'health' ? 'green' : 'soil'); }
+function toggleDailyHabit(id, date = selectedDate) {
+  const checks = data.checks[key(date, 'day')] || (data.checks[key(date, 'day')] = {});
+  const completed = !checks[id]; checks[id] = completed;
+  if (completed && navigator.vibrate) navigator.vibrate(10);
+  save(); render(); toast(completed ? 'Привычка отмечена' : 'Отметка снята');
 }
 function aggregate(days) {
   return days.reduce((summary, day) => { const item = dailySummary(day); summary.done += item.done; summary.total += item.total; return summary; }, { done: 0, total: 0 });
@@ -697,6 +707,26 @@ function renderPlanner() {
   }
   planner.append(grid);
 }
+function renderDayComposition() {
+  const composition = $('#day-composition');
+  if (period !== 'day') { composition.hidden = true; return; }
+  composition.hidden = false; composition.replaceChildren();
+  const habits = data.habits.filter(h => h.period === 'day'), checks = data.checks[key(selectedDate, 'day')] || {};
+  const heading = document.createElement('div'); heading.className = 'composition-heading';
+  const copy = document.createElement('div'); const title = document.createElement('h2'); title.textContent = 'Структура дня'; const caption = document.createElement('p'); caption.textContent = 'Ум и тело — две опоры твоего дня'; copy.append(title, caption);
+  const total = document.createElement('span'); total.className = 'composition-total'; total.textContent = `${habits.filter(h => checks[h.id]).length}/${habits.length} выполнено`; heading.append(copy, total); composition.append(heading);
+  const map = document.createElement('div'); map.className = 'day-map';
+  const aspects = [{ key: 'soil', name: 'Почва', subtitle: 'Фокус и знания' }, { key: 'green', name: 'Рост', subtitle: 'Тело и энергия' }];
+  aspects.forEach(aspect => {
+    const group = habits.filter(h => aspectFor(h) === aspect.key), panel = document.createElement('section'); panel.className = `aspect-panel aspect-${aspect.key}`;
+    const label = document.createElement('div'); label.className = 'aspect-label'; const name = document.createElement('strong'); name.textContent = aspect.name; const sub = document.createElement('span'); sub.textContent = aspect.subtitle; label.append(name, sub); panel.append(label);
+    const segments = document.createElement('div'); segments.className = 'aspect-segments';
+    group.forEach(habit => { const segment = document.createElement('button'); segment.type = 'button'; segment.className = `aspect-segment${checks[habit.id] ? ' done' : ''}`; segment.setAttribute('aria-pressed', String(!!checks[habit.id])); segment.setAttribute('aria-label', `${checks[habit.id] ? 'Отменить выполнение' : 'Выполнить'}: ${habit.name}`); const check = document.createElement('i'); check.textContent = '✓'; const text = document.createElement('span'); text.textContent = habit.name; segment.append(check, text); segment.onclick = () => toggleDailyHabit(habit.id); segments.append(segment); });
+    if (!group.length) { const empty = document.createElement('span'); empty.className = 'aspect-empty'; empty.textContent = 'Добавь привычку'; segments.append(empty); }
+    panel.append(segments); map.append(panel);
+  });
+  composition.append(map);
+}
 function render() {
   const meta = periods[period], checks = data.checks[key()] || {}, habits = data.habits.filter(h => h.period === period);
   const specialDone = habits.filter(h => checks[h.id]).length, overview = period === 'day' ? { done: specialDone, total: habits.length } : period === 'year' ? aggregate(Array.from({ length: 12 }, (_, month) => new Date(selectedDate.getFullYear(), month, 1)).flatMap(start => daysInRange(start, new Date(start.getFullYear(), start.getMonth() + 1, 0)))) : aggregate(trackedDays());
@@ -708,14 +738,14 @@ function render() {
   $('#date-label').textContent = dateLabel(); $('#completed-count').textContent = done; $('#total-count').textContent = ` / ${total}`;
   $('#progress-number').textContent = percent; $('#progress-bar').style.width = `${percent}%`; const n = streak(); $('#streak').textContent = n;
   $('#streak-unit').textContent = ` ${n % 10 === 1 && n % 100 !== 11 ? 'день' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'дня' : 'дней'}`;
-  renderPlanner();
+  renderDayComposition(); renderPlanner();
   const list = $('#habits'); list.replaceChildren();
   const visible = habits.filter(h => filter === 'all' || (filter === 'done' ? checks[h.id] : !checks[h.id]));
   if (!visible.length) { const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = !habits.length ? 'Здесь вырастет что-то хорошее. Добавь первую привычку ♧' : filter === 'pending' ? 'Всё выполнено. Время выдохнуть ♧' : 'Пока нет выполненных привычек. Начни с маленького шага.'; list.append(empty); }
   visible.forEach(h => {
     const row = document.createElement('div'); row.className = `habit-row${checks[h.id] ? ' done' : ''}`;
     const check = document.createElement('button'); check.className = 'check'; check.textContent = '✓'; check.setAttribute('aria-label', `${checks[h.id] ? 'Отменить выполнение' : 'Выполнить'}: ${h.name}`); check.setAttribute('aria-pressed', String(!!checks[h.id]));
-    check.onclick = () => { const completed = !checks[h.id]; data.checks[key()] ||= {}; data.checks[key()][h.id] = completed; if (completed && navigator.vibrate) navigator.vibrate(10); save(); render(); toast(completed ? 'Привычка отмечена' : 'Отметка снята'); };
+    check.onclick = () => { if (period === 'day') toggleDailyHabit(h.id); else { const completed = !checks[h.id]; data.checks[key()] ||= {}; data.checks[key()][h.id] = completed; save(); render(); toast(completed ? 'Привычка отмечена' : 'Отметка снята'); } };
     const category = categories[h.category] || categories.mind;
     const icon = document.createElement('span'); icon.className = `habit-icon ${h.category}`; icon.textContent = category[1]; icon.setAttribute('aria-hidden', 'true');
     const info = document.createElement('div'); info.className = 'habit-info';
