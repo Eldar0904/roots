@@ -641,6 +641,62 @@ to{opacity:1;transform:translateY(0)}
   .month-planner .report-group{gap:0;padding:0}
   .month-planner .report-box{width:100%;height:auto}
 }
+
+/* Clear states, accessible controls and the daily plan first on phones. */
+.report-box{display:flex;align-items:center;justify-content:center;color:#fff;font:700 11px/1 Arial,sans-serif}
+.report-box.done{color:#fff}
+.habit-row.inactive .check{opacity:.35;cursor:default}
+.habit-row.inactive .habit-name{color:#bdc7bf}
+.habit-status{color:#b7c5b9;font-size:9px;margin-top:5px}
+.pause{border:0;background:none;color:#aebbb0;min-width:30px;min-height:30px;padding:6px;font-size:14px;cursor:pointer}
+.pause:hover,.pause:focus-visible{color:#d5e5d7}
+.schedule-field{border:0;padding:0;margin:20px 0 0}
+.schedule-field[hidden]{display:none}
+.schedule-field legend{font-size:11px;margin-bottom:9px}
+.schedule-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.schedule-days label{display:block;position:relative;margin:0;cursor:pointer}
+.schedule-days input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.schedule-days span{display:grid;place-items:center;min-height:44px;border:1px solid #45594a;border-radius:7px;background:#17231b;color:#d1ded3;font-size:11px;font-weight:700}
+.schedule-days input:checked+span{background:#507f5e;color:#fff;border-color:#74a482}
+.schedule-days input:focus-visible+span{outline:2px solid #bad7bd;outline-offset:2px}
+#schedule-error{display:block;color:#efad98;font-size:11px;margin-top:8px}
+@media(max-width:620px){
+  html{font-size:100%}
+  .welcome{display:none}
+  .page-heading{margin-bottom:12px}
+  .page-heading::before{content:attr(data-title);display:block;font:600 1.55rem/1.2 Georgia,serif;color:#eef3ee}
+  .page-heading .eyebrow,.page-heading h1,.page-heading p{display:none}
+  .date-control{margin-top:11px}
+  #day-composition{margin-top:0}
+  .habit-row{gap:6px}
+  .habit-icon{display:none}
+  .habit-name{font-size:.9rem}
+  .habit-detail,.habit-status{font-size:.72rem}
+  .check,.edit,.pause,.delete{min-width:44px;min-height:44px;display:grid;place-items:center;padding:0}
+  .check{width:44px;height:44px;font-size:17px}
+  .edit,.pause,.delete{font-size:19px}
+  .section-heading .primary{min-height:48px}
+  .report-box{font-size:10px}
+  .month-planner .report-box{font-size:7px}
+  dialog{max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);overflow-y:auto}
+  .schedule-days{gap:3px}
+  .schedule-days span{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.schedule-days span,.report-box{transition:none!important}}
+
+@media(max-width:620px){
+  #navigation{height:56px;padding:6px 10px}
+  .nav-item{height:44px;min-height:44px}
+  .filters button{min-height:44px}
+  .month-planner{grid-template-columns:repeat(7,minmax(44px,1fr));overflow-x:auto;scrollbar-width:thin}
+  .schedule-days{grid-template-columns:repeat(7,minmax(44px,1fr));overflow-x:auto;padding:2px}
+  .pause{font-family:Arial,sans-serif}
+}
+@media(prefers-contrast:more){.report-box,.aspect-segment,.check{border-width:2px}.report-box.done,.aspect-segment.done{outline:2px solid #fff;outline-offset:-3px}}
+
+.aspect-segment:not(.done) i{border-color:rgba(255,255,255,.58)}
+.report-box:not(.done){box-shadow:inset 0 0 0 1px rgba(215,232,216,.38)}
+.schedule-note{margin:0 0 10px;color:#aebdb0;font-size:11px;line-height:1.5}
 </style>
 <!-- /ROOTS_STYLE --></head>
 <body>
@@ -649,7 +705,7 @@ to{opacity:1;transform:translateY(0)}
 <section id="day-composition" hidden></section><section class="welcome"><div class="welcome-copy"><span class="pill">ТВОЙ ПУТЬ К СЕБЕ</span><h2>Всё начинается с маленького семени.</h2><p>Каждая выполненная привычка — ещё один корень<br>твоей будущей версии. Продолжай расти.</p><div class="welcome-bottom"><span class="seed-icon">↗</span><span>Не идеально. Но каждый день.</span></div></div><div class="wild-landscape" aria-hidden="true"><span class="ridge ridge-one"></span><span class="ridge ridge-two"></span><span class="ridge ridge-three"></span><span class="wild-grass"></span><span class="wild-caption">OPEN GROUND · OPEN MIND</span></div></section>
 <section class="stats"><article><span class="stat-symbol olive">✓</span><div><span class="stat-label">Выполнено привычек</span><div class="stat-number"><b id="completed-count">0</b><small id="total-count"> / 0</small></div></div><span class="stat-caption">Шаг за шагом</span></article><article><span class="stat-symbol clay">↗</span><div><span class="stat-label">Прогресс периода</span><div class="stat-number"><b id="progress-number">0</b><small>%</small></div></div><div class="mini-progress"><i id="progress-bar"></i></div></article><article><span class="stat-symbol sand">♧</span><div><span class="stat-label">Серия дней</span><div class="stat-number"><b id="streak">0</b><small id="streak-unit"> дней</small></div></div><span class="stat-caption">Твоя устойчивость</span></article></section>
 <div class="workspace-grid"><section class="habit-panel"><div class="section-heading"><div><h2 id="habit-title">Мои привычки <span id="habit-badge">0</span></h2><p>Забота о себе складывается из простых вещей</p></div><button class="primary" id="add-habit">＋ <span>Добавить привычку</span></button></div><div class="filters"><button class="selected" data-filter="all">Все привычки</button><button data-filter="pending">В процессе</button><button data-filter="done">Выполнены</button><span id="habit-period">НА СЕГОДНЯ</span></div><div id="period-planner" hidden></div><div id="habits"><div class="habit-row"><button class="check" aria-label="Выполнить: Стакан воды после пробуждения">✓</button><span class="habit-icon health">♧</span><div class="habit-info"><div class="habit-name">Стакан воды после пробуждения</div><div class="habit-detail">Начать день с заботы о теле · 2 минуты</div></div><span class="category">Здоровье</span></div><div class="habit-row"><button class="check" aria-label="Выполнить: Читать 20 минут">✓</button><span class="habit-icon">▤</span><div class="habit-info"><div class="habit-name">Читать 20 минут</div><div class="habit-detail">Несколько страниц — новые мысли</div></div><span class="category">Развитие</span></div><div class="habit-row"><button class="check" aria-label="Выполнить: Прогулка на свежем воздухе">✓</button><span class="habit-icon health">♧</span><div class="habit-info"><div class="habit-name">Прогулка на свежем воздухе</div><div class="habit-detail">Замедлиться и заметить мир вокруг · 30 минут</div></div><span class="category">Здоровье</span></div></div><div class="habit-footer"><span>✧</span> Ты растёшь, даже когда этого не замечаешь.</div></section><aside class="right-column"><section class="focus-card"><div class="card-top"><span>✺</span><span id="focus-label">ФОКУС ДНЯ</span></div><h2>Что действительно<br>важно?</h2><p>Выбери главное и дай этому<br>своё внимание.</p><textarea id="focus" aria-label="Фокус периода" placeholder="Сегодня я хочу…" maxlength="1000"></textarea><span class="autosave">Сохраняется автоматически ↗</span></section><section class="quote-card"><span>“</span><blockquote>Природа не спешит,<br>но всё успевает.</blockquote><div>ЛАО-ЦЗЫ</div><div class="quote-branch">⌁</div></section></aside></div><footer><span>корни. <i>Пространство для твоего роста</i></span><span>С заботой о тебе и твоём завтра ♧</span></footer></div></main>
-<dialog id="habit-dialog"><form id="habit-form"><div class="dialog-heading"><h2>Посадим новую привычку</h2><button type="button" id="close-dialog" aria-label="Закрыть">×</button></div><p>Пусть маленькое действие станет началом перемен.</p><label>Название<input id="habit-name" required maxlength="80" placeholder="Например, читать 20 минут"></label><label>Категория<select id="habit-category"><option value="mind">Развитие</option><option value="health">Здоровье</option><option value="care">Забота о себе</option><option value="work">Дела и цели</option></select></label><label>Зона дня<select id="habit-aspect"><option value="soil">Почва — знания и внимание</option><option value="green">Рост — тело и энергия</option></select></label><label>Небольшая подсказка<input id="habit-detail" maxlength="100" placeholder="Что поможет тебе начать?"></label><div class="dialog-actions"><button type="button" id="cancel-dialog">Отмена</button><button class="primary" type="submit">Добавить привычку</button></div></form></dialog><div id="toast" role="status"></div><!-- ROOTS_SCRIPT -->
+<dialog id="habit-dialog"><form id="habit-form"><div class="dialog-heading"><h2>Посадим новую привычку</h2><button type="button" id="close-dialog" aria-label="Закрыть">×</button></div><p>Пусть маленькое действие станет началом перемен.</p><label>Название<input id="habit-name" required maxlength="80" placeholder="Например, читать 20 минут"></label><label>Категория<select id="habit-category"><option value="mind">Развитие</option><option value="health">Здоровье</option><option value="care">Забота о себе</option><option value="work">Дела и цели</option></select></label><label>Зона дня<select id="habit-aspect"><option value="soil">Почва — знания и внимание</option><option value="green">Рост — тело и энергия</option></select></label><fieldset id="habit-schedule" class="schedule-field"><legend>Дни недели</legend><p class="schedule-note">Изменения действуют с сегодняшнего дня. Прошлые отметки сохраняются.</p><div class="schedule-days"><label><input type="checkbox" name="weekday" value="0" checked><span>Пн</span></label><label><input type="checkbox" name="weekday" value="1" checked><span>Вт</span></label><label><input type="checkbox" name="weekday" value="2" checked><span>Ср</span></label><label><input type="checkbox" name="weekday" value="3" checked><span>Чт</span></label><label><input type="checkbox" name="weekday" value="4" checked><span>Пт</span></label><label><input type="checkbox" name="weekday" value="5" checked><span>Сб</span></label><label><input type="checkbox" name="weekday" value="6" checked><span>Вс</span></label></div><small id="schedule-error" role="alert"></small></fieldset><label>Небольшая подсказка<input id="habit-detail" maxlength="100" placeholder="Что поможет тебе начать?"></label><div class="dialog-actions"><button type="button" id="cancel-dialog">Отмена</button><button class="primary" type="submit">Добавить привычку</button></div></form></dialog><div id="toast" role="status"></div><!-- ROOTS_SCRIPT -->
 <script>const $ = (s) => document.querySelector(s);
 const categories = { mind: ['Развитие', '▤'], health: ['Здоровье', '♧'], care: ['Забота о себе', '☼'], work: ['Дела и цели', '◇'] };
 const periods = { day: ['Мой день', 'Мои привычки', 'НА СЕГОДНЯ', 'ФОКУС ДНЯ'], week: ['Неделя', 'Привычки недели', 'НА НЕДЕЛЮ', 'ФОКУС НЕДЕЛИ'], month: ['Месяц', 'Привычки месяца', 'НА МЕСЯЦ', 'ФОКУС МЕСЯЦА'], year: ['Год', 'Привычки года', 'НА ГОД', 'ФОКУС ГОДА'] };
@@ -673,6 +729,26 @@ try { data = JSON.parse(localStorage.getItem('roots-v1')); } catch {}
 if (!data || !Array.isArray(data.habits) || !data.checks || !data.focus) data = { habits: defaults, checks: {}, focus: {} };
 let period = 'day', selectedDate = new Date(), filter = 'all', toastTimer, animatedHabitId = null;
 const localDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const allWeekdays = [0, 1, 2, 3, 4, 5, 6];
+const weekday = d => (d.getDay() + 6) % 7;
+function planAt(habit, date) {
+  if (!habit.scheduleHistory) return { days: allWeekdays, paused: false };
+  return [...habit.scheduleHistory].reverse().find(entry => entry.from <= localDate(date)) || null;
+}
+function scheduledOn(habit, date) {
+  const plan = planAt(habit, date);
+  return !!plan && !plan.paused && plan.days.includes(weekday(date));
+}
+function visibleOn(habit, date) {
+  return scheduledOn(habit, date) || !!data.checks[key(date, 'day')]?.[habit.id];
+}
+function changePlan(habit, days, paused) {
+  const today = localDate(new Date());
+  if (!habit.scheduleHistory) habit.scheduleHistory = [{ from: '0000-01-01', days: allWeekdays, paused: false }];
+  habit.scheduleHistory = habit.scheduleHistory.filter(entry => entry.from !== today);
+  habit.scheduleHistory.push({ from: today, days: [...days].sort((a, b) => a - b), paused });
+  habit.scheduleHistory.sort((a, b) => a.from.localeCompare(b.from));
+}
 function key(date = selectedDate, mode = period) {
   const d = new Date(date);
   if (mode === 'week') { d.setDate(d.getDate() - (d.getDay() + 6) % 7); return `week:${localDate(d)}`; }
@@ -699,11 +775,14 @@ function dateLabel() {
   if (period === 'week') { const start = new Date(d); start.setDate(d.getDate() - (d.getDay() + 6) % 7); const end = new Date(start); end.setDate(start.getDate() + 6); return `${start.toLocaleDateString('ru-RU', {day:'numeric',month:'short'})} — ${end.toLocaleDateString('ru-RU', {day:'numeric',month:'short',year:'numeric'})}`; }
   return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '');
 }
-function streak() {
-  let count = 0; const d = new Date();
-  if (!Object.values(data.checks[key(d, 'day')] || {}).some(Boolean)) d.setDate(d.getDate() - 1);
-  while (Object.values(data.checks[key(d, 'day')] || {}).some(Boolean)) { count++; d.setDate(d.getDate() - 1); }
-  return count;
+function recentProgress() {
+  let completed = 0, scheduled = 0; const day = new Date(); day.setHours(0, 0, 0, 0);
+  for (let i = 0; i < 7; i++) {
+    const summary = dailySummary(day);
+    if (summary.total) { scheduled++; if (summary.done) completed++; }
+    day.setDate(day.getDate() - 1);
+  }
+  return { completed, scheduled };
 }
 function startOfWeek(date) {
   const d = new Date(date); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d;
@@ -714,19 +793,22 @@ function daysInRange(start, end) {
   return days;
 }
 function dailySummary(date) {
-  const dailyHabits = data.habits.filter(h => h.period === 'day');
+  const dailyHabits = data.habits.filter(h => h.period === 'day' && visibleOn(h, date));
   const checks = data.checks[key(date, 'day')] || {};
   return { done: dailyHabits.filter(h => checks[h.id]).length, total: dailyHabits.length };
 }
 function aspectFor(habit) { return habit.aspect || (habit.category === 'health' ? 'green' : 'soil'); }
 function toggleDailyHabit(id, date = selectedDate) {
+  const habit = data.habits.find(item => item.id === id);
+  if (!habit || !visibleOn(habit, date)) return;
   const checks = data.checks[key(date, 'day')] || (data.checks[key(date, 'day')] = {});
   const completed = !checks[id]; checks[id] = completed;
   if (completed && navigator.vibrate) navigator.vibrate(10);
   animatedHabitId = id; save(); render(); animatedHabitId = null;
 }
 function aggregate(days) {
-  return days.reduce((summary, day) => { const item = dailySummary(day); summary.done += item.done; summary.total += item.total; return summary; }, { done: 0, total: 0 });
+  const today = localDate(new Date());
+  return days.reduce((summary, day) => { if (localDate(day) > today) return summary; const item = dailySummary(day); summary.done += item.done; summary.total += item.total; return summary; }, { done: 0, total: 0 });
 }
 function trackedDays() {
   if (period === 'week') { const start = startOfWeek(selectedDate), end = new Date(start); end.setDate(end.getDate() + 6); return daysInRange(start, end); }
@@ -739,8 +821,8 @@ function habitBoxes(day, compact = false) {
   boxes.className = `report-boxes${compact ? ' compact' : ''}`;
   ['soil', 'green'].forEach(aspect => {
     const group = document.createElement('span'); group.className = `report-group report-${aspect}`;
-    const groupHabits = habits.filter(h => aspectFor(h) === aspect);
-    groupHabits.forEach(habit => { const box = document.createElement('span'); box.className = `report-box${checks[habit.id] ? ' done' : ''}`; box.title = habit.name; group.append(box); });
+    const groupHabits = habits.filter(h => aspectFor(h) === aspect && visibleOn(h, day));
+    groupHabits.forEach(habit => { const box = document.createElement('span'); box.className = `report-box${checks[habit.id] ? ' done' : ''}`; box.title = habit.name; box.textContent = checks[habit.id] ? '✓' : ''; group.append(box); });
     if (!groupHabits.length) group.classList.add('empty');
     boxes.append(group);
   });
@@ -749,7 +831,7 @@ function habitBoxes(day, compact = false) {
 function dayCard(day, compact = false) {
   const stat = dailySummary(day), card = document.createElement('button');
   card.className = `planner-day${stat.done ? ' has-progress' : ''}${localDate(day) === localDate(new Date()) ? ' today' : ''}`;
-  card.type = 'button'; card.setAttribute('aria-label', `${day.toLocaleDateString('ru-RU')}: ${stat.done} из ${stat.total}`);
+  card.type = 'button'; card.setAttribute('aria-label', `${day.toLocaleDateString('ru-RU')}: ${stat.total ? `${stat.done} из ${stat.total} привычек` : 'нет запланированных привычек'}`);
   const name = document.createElement('span'); name.className = 'planner-day-name'; name.textContent = compact ? String(day.getDate()) : day.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
   card.append(name, habitBoxes(day, compact));
   card.onclick = () => { selectedDate = new Date(day); period = 'day'; filter = 'all'; document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('active', b.dataset.period === 'day')); document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); render(); };
@@ -789,7 +871,7 @@ function renderDayComposition() {
   const composition = $('#day-composition');
   if (period !== 'day') { composition.hidden = true; return; }
   composition.hidden = false; composition.replaceChildren();
-  const habits = data.habits.filter(h => h.period === 'day'), checks = data.checks[key(selectedDate, 'day')] || {};
+  const habits = data.habits.filter(h => h.period === 'day' && visibleOn(h, selectedDate)), checks = data.checks[key(selectedDate, 'day')] || {};
   const heading = document.createElement('div'); heading.className = 'composition-heading';
   const copy = document.createElement('div'); const title = document.createElement('h2'); title.textContent = 'Структура дня'; const caption = document.createElement('p'); caption.textContent = 'Ум и тело — две опоры твоего дня'; copy.append(title, caption);
   const total = document.createElement('span'); total.className = 'composition-total'; total.textContent = `${habits.filter(h => checks[h.id]).length}/${habits.length} выполнено`; heading.append(copy, total); composition.append(heading);
@@ -807,33 +889,40 @@ function renderDayComposition() {
 }
 function render() {
   const meta = periods[period], checks = data.checks[key()] || {}, habits = data.habits.filter(h => h.period === period);
-  const specialDone = habits.filter(h => checks[h.id]).length, overview = period === 'day' ? { done: specialDone, total: habits.length } : period === 'year' ? aggregate(Array.from({ length: 12 }, (_, month) => new Date(selectedDate.getFullYear(), month, 1)).flatMap(start => daysInRange(start, new Date(start.getFullYear(), start.getMonth() + 1, 0)))) : aggregate(trackedDays());
+  const daySummary = dailySummary(selectedDate), overview = period === 'day' ? daySummary : period === 'year' ? aggregate(Array.from({ length: 12 }, (_, month) => new Date(selectedDate.getFullYear(), month, 1)).flatMap(start => daysInRange(start, new Date(start.getFullYear(), start.getMonth() + 1, 0)))) : aggregate(trackedDays());
   const done = overview.done, total = overview.total, percent = total ? Math.round(done / total * 100) : 0;
   $('#crumb').textContent = meta[0]; $('#habit-title').firstChild.textContent = `${meta[1]} `; $('#habit-badge').textContent = habits.length;
+  $('.page-heading').dataset.title = meta[0];
   $('#habit-period').textContent = meta[2]; $('#focus-label').textContent = meta[3]; $('#focus').value = data.focus[key()] || '';
   $('#focus').placeholder = { day:'Сегодня я хочу…',week:'На этой неделе я хочу…',month:'В этом месяце я хочу…',year:'В этом году я хочу…' }[period];
   $('.stats .stat-label').textContent = period === 'day' ? 'Выполнено привычек' : `Выполнено за ${period === 'week' ? 'неделю' : period === 'month' ? 'месяц' : 'год'}`;
   $('#date-label').textContent = dateLabel(); $('#completed-count').textContent = done; $('#total-count').textContent = ` / ${total}`;
-  $('#progress-number').textContent = percent; $('#progress-bar').style.width = `${percent}%`; const n = streak(); $('#streak').textContent = n;
-  $('#streak-unit').textContent = ` ${n % 10 === 1 && n % 100 !== 11 ? 'день' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'дня' : 'дней'}`;
+  $('#progress-number').textContent = percent; $('#progress-bar').style.width = `${percent}%`;
+  const recent = recentProgress(); $('.stats article:last-child .stat-label').textContent = 'Дней с прогрессом'; $('#streak').textContent = recent.completed; $('#streak-unit').textContent = ` / ${recent.scheduled}`;
+  $('.stats article:last-child .stat-caption').textContent = 'За последние 7 дней';
   renderDayComposition(); renderPlanner();
   const list = $('#habits'); list.replaceChildren();
-  const visible = habits.filter(h => filter === 'all' || (filter === 'done' ? checks[h.id] : !checks[h.id]));
+  const visible = habits.filter(h => filter === 'all' || (filter === 'done' ? checks[h.id] : !checks[h.id] && (period !== 'day' || visibleOn(h, selectedDate))));
   if (!visible.length) { const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = !habits.length ? 'Здесь вырастет что-то хорошее. Добавь первую привычку ♧' : filter === 'pending' ? 'Всё выполнено. Время выдохнуть ♧' : 'Пока нет выполненных привычек. Начни с маленького шага.'; list.append(empty); }
   visible.forEach(h => {
-    const row = document.createElement('div'); row.className = `habit-row${checks[h.id] ? ' done' : ''}${animatedHabitId === h.id ? ' changed' : ''}`;
+    const plan = planAt(h, selectedDate), inactive = period === 'day' ? !visibleOn(h, selectedDate) : !!plan?.paused;
+    const row = document.createElement('div'); row.className = `habit-row${checks[h.id] ? ' done' : ''}${inactive ? ' inactive' : ''}${animatedHabitId === h.id ? ' changed' : ''}`;
     const check = document.createElement('button'); check.className = 'check'; check.textContent = '✓'; check.setAttribute('aria-label', `${checks[h.id] ? 'Отменить выполнение' : 'Выполнить'}: ${h.name}`); check.setAttribute('aria-pressed', String(!!checks[h.id]));
+    check.disabled = inactive;
     check.onclick = () => { if (period === 'day') toggleDailyHabit(h.id); else { data.checks[key()] ||= {}; data.checks[key()][h.id] = !checks[h.id]; animatedHabitId = h.id; save(); render(); animatedHabitId = null; } };
     const category = categories[h.category] || categories.mind;
     const icon = document.createElement('span'); icon.className = `habit-icon ${h.category}`; icon.textContent = category[1]; icon.setAttribute('aria-hidden', 'true');
     const info = document.createElement('div'); info.className = 'habit-info';
     const name = document.createElement('div'); name.className = 'habit-name'; name.textContent = h.name;
     const detail = document.createElement('div'); detail.className = 'habit-detail'; detail.textContent = h.detail; info.append(name, detail);
+    if (inactive) { const status = document.createElement('div'); status.className = 'habit-status'; status.textContent = plan?.paused ? 'На паузе' : 'Не запланировано на этот день'; info.append(status); }
     const tag = document.createElement('span'); tag.className = `category ${h.category}`; tag.textContent = category[0];
     const edit = document.createElement('button'); edit.className = 'edit'; edit.textContent = '✎'; edit.setAttribute('aria-label', `Редактировать привычку: ${h.name}`); edit.onclick = () => openHabitEditor(h);
+    const pause = document.createElement('button'); pause.className = 'pause'; pause.textContent = planAt(h, new Date())?.paused ? '↻' : 'Ⅱ'; pause.setAttribute('aria-label', `${planAt(h, new Date())?.paused ? 'Возобновить' : 'Приостановить'} привычку: ${h.name}`);
+    pause.onclick = () => { const currentPlan = planAt(h, new Date()) || { days: allWeekdays, paused: false }; changePlan(h, currentPlan.days, !currentPlan.paused); save(); render(); toast(currentPlan.paused ? 'Привычка возобновлена' : 'Привычка на паузе. История сохранена'); };
     const remove = document.createElement('button'); remove.className = 'delete'; remove.textContent = '×'; remove.setAttribute('aria-label', `Удалить привычку: ${h.name}`);
-    remove.onclick = () => { if (!confirm(`Удалить привычку «${h.name}» из всех периодов?`)) return; data.habits = data.habits.filter(item => item.id !== h.id); Object.values(data.checks).forEach(c => delete c[h.id]); save(); render(); toast('Привычка удалена'); };
-    row.append(check, icon, info, tag, edit, remove); list.append(row);
+    remove.onclick = () => { if (!confirm(`Удалить привычку «${h.name}» и всю историю её отметок? Для перерыва используйте паузу.`)) return; data.habits = data.habits.filter(item => item.id !== h.id); Object.values(data.checks).forEach(c => delete c[h.id]); save(); render(); toast('Привычка и её история удалены'); };
+    row.append(check, icon, info, tag, edit, pause, remove); list.append(row);
   });
 }
 document.querySelectorAll('[data-period]').forEach(button => button.onclick = () => { period = button.dataset.period; filter = 'all'; document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('active', b === button)); document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); render(); animateView(); });
@@ -845,8 +934,16 @@ const dialog = $('#habit-dialog'); let editingHabitId = null;
 function openHabitEditor(habit = null) {
   editingHabitId = habit?.id || null; $('#habit-form').reset();
   document.querySelector('.dialog-heading h2').textContent = habit ? 'Изменить привычку' : 'Добавить привычку';
+  $('#habit-form button[type="submit"]').textContent = habit ? 'Сохранить изменения' : 'Добавить привычку';
   $('#habit-aspect').setCustomValidity('');
-  if (habit) { $('#habit-name').value = habit.name; $('#habit-detail').value = habit.detail; $('#habit-category').value = habit.category; $('#habit-aspect').value = aspectFor(habit); }
+  $('#schedule-error').textContent = '';
+  const daily = (habit?.period || period) === 'day';
+  $('#habit-schedule').hidden = !daily; $('#habit-aspect').parentElement.hidden = !daily;
+  if (habit) {
+    $('#habit-name').value = habit.name; $('#habit-detail').value = habit.detail; $('#habit-category').value = habit.category; $('#habit-aspect').value = aspectFor(habit);
+    const days = planAt(habit, new Date())?.days || allWeekdays;
+    document.querySelectorAll('[name="weekday"]').forEach(input => { input.checked = days.includes(Number(input.value)); });
+  }
   dialog.showModal(); $('#habit-name').focus();
 }
 $('#add-habit').onclick = () => openHabitEditor();
@@ -858,17 +955,21 @@ $('#habit-form').onsubmit = e => {
   if (!name) { $('#habit-name').setCustomValidity('Введите название привычки'); $('#habit-name').reportValidity(); return; }
   const values = { name, detail: $('#habit-detail').value.trim(), category: $('#habit-category').value, aspect: $('#habit-aspect').value };
   const current = editingHabitId && data.habits.find(h => h.id === editingHabitId);
-  if ((current?.period || period) === 'day') {
+  const daily = (current?.period || period) === 'day';
+  const days = [...document.querySelectorAll('[name="weekday"]:checked')].map(input => Number(input.value));
+  if (daily && !days.length) { $('#schedule-error').textContent = 'Выберите хотя бы один день'; return; }
+  if (daily) {
     const occupied = data.habits.filter(h => h.period === 'day' && h.id !== editingHabitId && aspectFor(h) === values.aspect).length;
     if (occupied >= 5) { $('#habit-aspect').setCustomValidity('В каждой зоне дня может быть не более пяти привычек'); $('#habit-aspect').reportValidity(); return; }
   }
-  if (current) Object.assign(current, values);
-  else data.habits.push({ id: crypto.randomUUID(), ...values, period });
+  if (current) { Object.assign(current, values); if (daily) changePlan(current, days, planAt(current, new Date())?.paused || false); }
+  else data.habits.push({ id: crypto.randomUUID(), ...values, period, scheduleHistory: [{ from: localDate(new Date()), days: daily ? days : allWeekdays, paused: false }] });
   filter = 'all'; document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all'));
   save(); dialog.close(); render(); toast(editingHabitId ? 'Привычка обновлена' : 'Новая привычка добавлена'); editingHabitId = null;
 };
 $('#habit-name').addEventListener('input', () => $('#habit-name').setCustomValidity(''));
 $('#habit-aspect').addEventListener('change', () => $('#habit-aspect').setCustomValidity(''));
+document.querySelectorAll('[name="weekday"]').forEach(input => input.addEventListener('change', () => { $('#schedule-error').textContent = ''; }));
 render();
 </script>
 <!-- /ROOTS_SCRIPT --></body></html>

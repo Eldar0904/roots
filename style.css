@@ -638,3 +638,59 @@ to{opacity:1;transform:translateY(0)}
   .month-planner .report-group{gap:0;padding:0}
   .month-planner .report-box{width:100%;height:auto}
 }
+
+/* Clear states, accessible controls and the daily plan first on phones. */
+.report-box{display:flex;align-items:center;justify-content:center;color:#fff;font:700 11px/1 Arial,sans-serif}
+.report-box.done{color:#fff}
+.habit-row.inactive .check{opacity:.35;cursor:default}
+.habit-row.inactive .habit-name{color:#bdc7bf}
+.habit-status{color:#b7c5b9;font-size:9px;margin-top:5px}
+.pause{border:0;background:none;color:#aebbb0;min-width:30px;min-height:30px;padding:6px;font-size:14px;cursor:pointer}
+.pause:hover,.pause:focus-visible{color:#d5e5d7}
+.schedule-field{border:0;padding:0;margin:20px 0 0}
+.schedule-field[hidden]{display:none}
+.schedule-field legend{font-size:11px;margin-bottom:9px}
+.schedule-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.schedule-days label{display:block;position:relative;margin:0;cursor:pointer}
+.schedule-days input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.schedule-days span{display:grid;place-items:center;min-height:44px;border:1px solid #45594a;border-radius:7px;background:#17231b;color:#d1ded3;font-size:11px;font-weight:700}
+.schedule-days input:checked+span{background:#507f5e;color:#fff;border-color:#74a482}
+.schedule-days input:focus-visible+span{outline:2px solid #bad7bd;outline-offset:2px}
+#schedule-error{display:block;color:#efad98;font-size:11px;margin-top:8px}
+@media(max-width:620px){
+  html{font-size:100%}
+  .welcome{display:none}
+  .page-heading{margin-bottom:12px}
+  .page-heading::before{content:attr(data-title);display:block;font:600 1.55rem/1.2 Georgia,serif;color:#eef3ee}
+  .page-heading .eyebrow,.page-heading h1,.page-heading p{display:none}
+  .date-control{margin-top:11px}
+  #day-composition{margin-top:0}
+  .habit-row{gap:6px}
+  .habit-icon{display:none}
+  .habit-name{font-size:.9rem}
+  .habit-detail,.habit-status{font-size:.72rem}
+  .check,.edit,.pause,.delete{min-width:44px;min-height:44px;display:grid;place-items:center;padding:0}
+  .check{width:44px;height:44px;font-size:17px}
+  .edit,.pause,.delete{font-size:19px}
+  .section-heading .primary{min-height:48px}
+  .report-box{font-size:10px}
+  .month-planner .report-box{font-size:7px}
+  dialog{max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);overflow-y:auto}
+  .schedule-days{gap:3px}
+  .schedule-days span{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.schedule-days span,.report-box{transition:none!important}}
+
+@media(max-width:620px){
+  #navigation{height:56px;padding:6px 10px}
+  .nav-item{height:44px;min-height:44px}
+  .filters button{min-height:44px}
+  .month-planner{grid-template-columns:repeat(7,minmax(44px,1fr));overflow-x:auto;scrollbar-width:thin}
+  .schedule-days{grid-template-columns:repeat(7,minmax(44px,1fr));overflow-x:auto;padding:2px}
+  .pause{font-family:Arial,sans-serif}
+}
+@media(prefers-contrast:more){.report-box,.aspect-segment,.check{border-width:2px}.report-box.done,.aspect-segment.done{outline:2px solid #fff;outline-offset:-3px}}
+
+.aspect-segment:not(.done) i{border-color:rgba(255,255,255,.58)}
+.report-box:not(.done){box-shadow:inset 0 0 0 1px rgba(215,232,216,.38)}
+.schedule-note{margin:0 0 10px;color:#aebdb0;font-size:11px;line-height:1.5}

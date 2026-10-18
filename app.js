@@ -21,6 +21,26 @@ try { data = JSON.parse(localStorage.getItem('roots-v1')); } catch {}
 if (!data || !Array.isArray(data.habits) || !data.checks || !data.focus) data = { habits: defaults, checks: {}, focus: {} };
 let period = 'day', selectedDate = new Date(), filter = 'all', toastTimer, animatedHabitId = null;
 const localDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const allWeekdays = [0, 1, 2, 3, 4, 5, 6];
+const weekday = d => (d.getDay() + 6) % 7;
+function planAt(habit, date) {
+  if (!habit.scheduleHistory) return { days: allWeekdays, paused: false };
+  return [...habit.scheduleHistory].reverse().find(entry => entry.from <= localDate(date)) || null;
+}
+function scheduledOn(habit, date) {
+  const plan = planAt(habit, date);
+  return !!plan && !plan.paused && plan.days.includes(weekday(date));
+}
+function visibleOn(habit, date) {
+  return scheduledOn(habit, date) || !!data.checks[key(date, 'day')]?.[habit.id];
+}
+function changePlan(habit, days, paused) {
+  const today = localDate(new Date());
+  if (!habit.scheduleHistory) habit.scheduleHistory = [{ from: '0000-01-01', days: allWeekdays, paused: false }];
+  habit.scheduleHistory = habit.scheduleHistory.filter(entry => entry.from !== today);
+  habit.scheduleHistory.push({ from: today, days: [...days].sort((a, b) => a - b), paused });
+  habit.scheduleHistory.sort((a, b) => a.from.localeCompare(b.from));
+}
 function key(date = selectedDate, mode = period) {
   const d = new Date(date);
   if (mode === 'week') { d.setDate(d.getDate() - (d.getDay() + 6) % 7); return `week:${localDate(d)}`; }
@@ -47,11 +67,14 @@ function dateLabel() {
   if (period === 'week') { const start = new Date(d); start.setDate(d.getDate() - (d.getDay() + 6) % 7); const end = new Date(start); end.setDate(start.getDate() + 6); return `${start.toLocaleDateString('ru-RU', {day:'numeric',month:'short'})} — ${end.toLocaleDateString('ru-RU', {day:'numeric',month:'short',year:'numeric'})}`; }
   return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '');
 }
-function streak() {
-  let count = 0; const d = new Date();
-  if (!Object.values(data.checks[key(d, 'day')] || {}).some(Boolean)) d.setDate(d.getDate() - 1);
-  while (Object.values(data.checks[key(d, 'day')] || {}).some(Boolean)) { count++; d.setDate(d.getDate() - 1); }
-  return count;
+function recentProgress() {
+  let completed = 0, scheduled = 0; const day = new Date(); day.setHours(0, 0, 0, 0);
+  for (let i = 0; i < 7; i++) {
+    const summary = dailySummary(day);
+    if (summary.total) { scheduled++; if (summary.done) completed++; }
+    day.setDate(day.getDate() - 1);
+  }
+  return { completed, scheduled };
 }
 function startOfWeek(date) {
   const d = new Date(date); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d;
@@ -62,19 +85,22 @@ function daysInRange(start, end) {
   return days;
 }
 function dailySummary(date) {
-  const dailyHabits = data.habits.filter(h => h.period === 'day');
+  const dailyHabits = data.habits.filter(h => h.period === 'day' && visibleOn(h, date));
   const checks = data.checks[key(date, 'day')] || {};
   return { done: dailyHabits.filter(h => checks[h.id]).length, total: dailyHabits.length };
 }
 function aspectFor(habit) { return habit.aspect || (habit.category === 'health' ? 'green' : 'soil'); }
 function toggleDailyHabit(id, date = selectedDate) {
+  const habit = data.habits.find(item => item.id === id);
+  if (!habit || !visibleOn(habit, date)) return;
   const checks = data.checks[key(date, 'day')] || (data.checks[key(date, 'day')] = {});
   const completed = !checks[id]; checks[id] = completed;
   if (completed && navigator.vibrate) navigator.vibrate(10);
   animatedHabitId = id; save(); render(); animatedHabitId = null;
 }
 function aggregate(days) {
-  return days.reduce((summary, day) => { const item = dailySummary(day); summary.done += item.done; summary.total += item.total; return summary; }, { done: 0, total: 0 });
+  const today = localDate(new Date());
+  return days.reduce((summary, day) => { if (localDate(day) > today) return summary; const item = dailySummary(day); summary.done += item.done; summary.total += item.total; return summary; }, { done: 0, total: 0 });
 }
 function trackedDays() {
   if (period === 'week') { const start = startOfWeek(selectedDate), end = new Date(start); end.setDate(end.getDate() + 6); return daysInRange(start, end); }
@@ -87,8 +113,8 @@ function habitBoxes(day, compact = false) {
   boxes.className = `report-boxes${compact ? ' compact' : ''}`;
   ['soil', 'green'].forEach(aspect => {
     const group = document.createElement('span'); group.className = `report-group report-${aspect}`;
-    const groupHabits = habits.filter(h => aspectFor(h) === aspect);
-    groupHabits.forEach(habit => { const box = document.createElement('span'); box.className = `report-box${checks[habit.id] ? ' done' : ''}`; box.title = habit.name; group.append(box); });
+    const groupHabits = habits.filter(h => aspectFor(h) === aspect && visibleOn(h, day));
+    groupHabits.forEach(habit => { const box = document.createElement('span'); box.className = `report-box${checks[habit.id] ? ' done' : ''}`; box.title = habit.name; box.textContent = checks[habit.id] ? '✓' : ''; group.append(box); });
     if (!groupHabits.length) group.classList.add('empty');
     boxes.append(group);
   });
@@ -97,7 +123,7 @@ function habitBoxes(day, compact = false) {
 function dayCard(day, compact = false) {
   const stat = dailySummary(day), card = document.createElement('button');
   card.className = `planner-day${stat.done ? ' has-progress' : ''}${localDate(day) === localDate(new Date()) ? ' today' : ''}`;
-  card.type = 'button'; card.setAttribute('aria-label', `${day.toLocaleDateString('ru-RU')}: ${stat.done} из ${stat.total}`);
+  card.type = 'button'; card.setAttribute('aria-label', `${day.toLocaleDateString('ru-RU')}: ${stat.total ? `${stat.done} из ${stat.total} привычек` : 'нет запланированных привычек'}`);
   const name = document.createElement('span'); name.className = 'planner-day-name'; name.textContent = compact ? String(day.getDate()) : day.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
   card.append(name, habitBoxes(day, compact));
   card.onclick = () => { selectedDate = new Date(day); period = 'day'; filter = 'all'; document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('active', b.dataset.period === 'day')); document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); render(); };
@@ -137,7 +163,7 @@ function renderDayComposition() {
   const composition = $('#day-composition');
   if (period !== 'day') { composition.hidden = true; return; }
   composition.hidden = false; composition.replaceChildren();
-  const habits = data.habits.filter(h => h.period === 'day'), checks = data.checks[key(selectedDate, 'day')] || {};
+  const habits = data.habits.filter(h => h.period === 'day' && visibleOn(h, selectedDate)), checks = data.checks[key(selectedDate, 'day')] || {};
   const heading = document.createElement('div'); heading.className = 'composition-heading';
   const copy = document.createElement('div'); const title = document.createElement('h2'); title.textContent = 'Структура дня'; const caption = document.createElement('p'); caption.textContent = 'Ум и тело — две опоры твоего дня'; copy.append(title, caption);
   const total = document.createElement('span'); total.className = 'composition-total'; total.textContent = `${habits.filter(h => checks[h.id]).length}/${habits.length} выполнено`; heading.append(copy, total); composition.append(heading);
@@ -155,33 +181,40 @@ function renderDayComposition() {
 }
 function render() {
   const meta = periods[period], checks = data.checks[key()] || {}, habits = data.habits.filter(h => h.period === period);
-  const specialDone = habits.filter(h => checks[h.id]).length, overview = period === 'day' ? { done: specialDone, total: habits.length } : period === 'year' ? aggregate(Array.from({ length: 12 }, (_, month) => new Date(selectedDate.getFullYear(), month, 1)).flatMap(start => daysInRange(start, new Date(start.getFullYear(), start.getMonth() + 1, 0)))) : aggregate(trackedDays());
+  const daySummary = dailySummary(selectedDate), overview = period === 'day' ? daySummary : period === 'year' ? aggregate(Array.from({ length: 12 }, (_, month) => new Date(selectedDate.getFullYear(), month, 1)).flatMap(start => daysInRange(start, new Date(start.getFullYear(), start.getMonth() + 1, 0)))) : aggregate(trackedDays());
   const done = overview.done, total = overview.total, percent = total ? Math.round(done / total * 100) : 0;
   $('#crumb').textContent = meta[0]; $('#habit-title').firstChild.textContent = `${meta[1]} `; $('#habit-badge').textContent = habits.length;
+  $('.page-heading').dataset.title = meta[0];
   $('#habit-period').textContent = meta[2]; $('#focus-label').textContent = meta[3]; $('#focus').value = data.focus[key()] || '';
   $('#focus').placeholder = { day:'Сегодня я хочу…',week:'На этой неделе я хочу…',month:'В этом месяце я хочу…',year:'В этом году я хочу…' }[period];
   $('.stats .stat-label').textContent = period === 'day' ? 'Выполнено привычек' : `Выполнено за ${period === 'week' ? 'неделю' : period === 'month' ? 'месяц' : 'год'}`;
   $('#date-label').textContent = dateLabel(); $('#completed-count').textContent = done; $('#total-count').textContent = ` / ${total}`;
-  $('#progress-number').textContent = percent; $('#progress-bar').style.width = `${percent}%`; const n = streak(); $('#streak').textContent = n;
-  $('#streak-unit').textContent = ` ${n % 10 === 1 && n % 100 !== 11 ? 'день' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'дня' : 'дней'}`;
+  $('#progress-number').textContent = percent; $('#progress-bar').style.width = `${percent}%`;
+  const recent = recentProgress(); $('.stats article:last-child .stat-label').textContent = 'Дней с прогрессом'; $('#streak').textContent = recent.completed; $('#streak-unit').textContent = ` / ${recent.scheduled}`;
+  $('.stats article:last-child .stat-caption').textContent = 'За последние 7 дней';
   renderDayComposition(); renderPlanner();
   const list = $('#habits'); list.replaceChildren();
-  const visible = habits.filter(h => filter === 'all' || (filter === 'done' ? checks[h.id] : !checks[h.id]));
+  const visible = habits.filter(h => filter === 'all' || (filter === 'done' ? checks[h.id] : !checks[h.id] && (period !== 'day' || visibleOn(h, selectedDate))));
   if (!visible.length) { const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = !habits.length ? 'Здесь вырастет что-то хорошее. Добавь первую привычку ♧' : filter === 'pending' ? 'Всё выполнено. Время выдохнуть ♧' : 'Пока нет выполненных привычек. Начни с маленького шага.'; list.append(empty); }
   visible.forEach(h => {
-    const row = document.createElement('div'); row.className = `habit-row${checks[h.id] ? ' done' : ''}${animatedHabitId === h.id ? ' changed' : ''}`;
+    const plan = planAt(h, selectedDate), inactive = period === 'day' ? !visibleOn(h, selectedDate) : !!plan?.paused;
+    const row = document.createElement('div'); row.className = `habit-row${checks[h.id] ? ' done' : ''}${inactive ? ' inactive' : ''}${animatedHabitId === h.id ? ' changed' : ''}`;
     const check = document.createElement('button'); check.className = 'check'; check.textContent = '✓'; check.setAttribute('aria-label', `${checks[h.id] ? 'Отменить выполнение' : 'Выполнить'}: ${h.name}`); check.setAttribute('aria-pressed', String(!!checks[h.id]));
+    check.disabled = inactive;
     check.onclick = () => { if (period === 'day') toggleDailyHabit(h.id); else { data.checks[key()] ||= {}; data.checks[key()][h.id] = !checks[h.id]; animatedHabitId = h.id; save(); render(); animatedHabitId = null; } };
     const category = categories[h.category] || categories.mind;
     const icon = document.createElement('span'); icon.className = `habit-icon ${h.category}`; icon.textContent = category[1]; icon.setAttribute('aria-hidden', 'true');
     const info = document.createElement('div'); info.className = 'habit-info';
     const name = document.createElement('div'); name.className = 'habit-name'; name.textContent = h.name;
     const detail = document.createElement('div'); detail.className = 'habit-detail'; detail.textContent = h.detail; info.append(name, detail);
+    if (inactive) { const status = document.createElement('div'); status.className = 'habit-status'; status.textContent = plan?.paused ? 'На паузе' : 'Не запланировано на этот день'; info.append(status); }
     const tag = document.createElement('span'); tag.className = `category ${h.category}`; tag.textContent = category[0];
     const edit = document.createElement('button'); edit.className = 'edit'; edit.textContent = '✎'; edit.setAttribute('aria-label', `Редактировать привычку: ${h.name}`); edit.onclick = () => openHabitEditor(h);
+    const pause = document.createElement('button'); pause.className = 'pause'; pause.textContent = planAt(h, new Date())?.paused ? '↻' : 'Ⅱ'; pause.setAttribute('aria-label', `${planAt(h, new Date())?.paused ? 'Возобновить' : 'Приостановить'} привычку: ${h.name}`);
+    pause.onclick = () => { const currentPlan = planAt(h, new Date()) || { days: allWeekdays, paused: false }; changePlan(h, currentPlan.days, !currentPlan.paused); save(); render(); toast(currentPlan.paused ? 'Привычка возобновлена' : 'Привычка на паузе. История сохранена'); };
     const remove = document.createElement('button'); remove.className = 'delete'; remove.textContent = '×'; remove.setAttribute('aria-label', `Удалить привычку: ${h.name}`);
-    remove.onclick = () => { if (!confirm(`Удалить привычку «${h.name}» из всех периодов?`)) return; data.habits = data.habits.filter(item => item.id !== h.id); Object.values(data.checks).forEach(c => delete c[h.id]); save(); render(); toast('Привычка удалена'); };
-    row.append(check, icon, info, tag, edit, remove); list.append(row);
+    remove.onclick = () => { if (!confirm(`Удалить привычку «${h.name}» и всю историю её отметок? Для перерыва используйте паузу.`)) return; data.habits = data.habits.filter(item => item.id !== h.id); Object.values(data.checks).forEach(c => delete c[h.id]); save(); render(); toast('Привычка и её история удалены'); };
+    row.append(check, icon, info, tag, edit, pause, remove); list.append(row);
   });
 }
 document.querySelectorAll('[data-period]').forEach(button => button.onclick = () => { period = button.dataset.period; filter = 'all'; document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('active', b === button)); document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); render(); animateView(); });
@@ -193,8 +226,16 @@ const dialog = $('#habit-dialog'); let editingHabitId = null;
 function openHabitEditor(habit = null) {
   editingHabitId = habit?.id || null; $('#habit-form').reset();
   document.querySelector('.dialog-heading h2').textContent = habit ? 'Изменить привычку' : 'Добавить привычку';
+  $('#habit-form button[type="submit"]').textContent = habit ? 'Сохранить изменения' : 'Добавить привычку';
   $('#habit-aspect').setCustomValidity('');
-  if (habit) { $('#habit-name').value = habit.name; $('#habit-detail').value = habit.detail; $('#habit-category').value = habit.category; $('#habit-aspect').value = aspectFor(habit); }
+  $('#schedule-error').textContent = '';
+  const daily = (habit?.period || period) === 'day';
+  $('#habit-schedule').hidden = !daily; $('#habit-aspect').parentElement.hidden = !daily;
+  if (habit) {
+    $('#habit-name').value = habit.name; $('#habit-detail').value = habit.detail; $('#habit-category').value = habit.category; $('#habit-aspect').value = aspectFor(habit);
+    const days = planAt(habit, new Date())?.days || allWeekdays;
+    document.querySelectorAll('[name="weekday"]').forEach(input => { input.checked = days.includes(Number(input.value)); });
+  }
   dialog.showModal(); $('#habit-name').focus();
 }
 $('#add-habit').onclick = () => openHabitEditor();
@@ -206,15 +247,19 @@ $('#habit-form').onsubmit = e => {
   if (!name) { $('#habit-name').setCustomValidity('Введите название привычки'); $('#habit-name').reportValidity(); return; }
   const values = { name, detail: $('#habit-detail').value.trim(), category: $('#habit-category').value, aspect: $('#habit-aspect').value };
   const current = editingHabitId && data.habits.find(h => h.id === editingHabitId);
-  if ((current?.period || period) === 'day') {
+  const daily = (current?.period || period) === 'day';
+  const days = [...document.querySelectorAll('[name="weekday"]:checked')].map(input => Number(input.value));
+  if (daily && !days.length) { $('#schedule-error').textContent = 'Выберите хотя бы один день'; return; }
+  if (daily) {
     const occupied = data.habits.filter(h => h.period === 'day' && h.id !== editingHabitId && aspectFor(h) === values.aspect).length;
     if (occupied >= 5) { $('#habit-aspect').setCustomValidity('В каждой зоне дня может быть не более пяти привычек'); $('#habit-aspect').reportValidity(); return; }
   }
-  if (current) Object.assign(current, values);
-  else data.habits.push({ id: crypto.randomUUID(), ...values, period });
+  if (current) { Object.assign(current, values); if (daily) changePlan(current, days, planAt(current, new Date())?.paused || false); }
+  else data.habits.push({ id: crypto.randomUUID(), ...values, period, scheduleHistory: [{ from: localDate(new Date()), days: daily ? days : allWeekdays, paused: false }] });
   filter = 'all'; document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all'));
   save(); dialog.close(); render(); toast(editingHabitId ? 'Привычка обновлена' : 'Новая привычка добавлена'); editingHabitId = null;
 };
 $('#habit-name').addEventListener('input', () => $('#habit-name').setCustomValidity(''));
 $('#habit-aspect').addEventListener('change', () => $('#habit-aspect').setCustomValidity(''));
+document.querySelectorAll('[name="weekday"]').forEach(input => input.addEventListener('change', () => { $('#schedule-error').textContent = ''; }));
 render();
