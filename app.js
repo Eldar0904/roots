@@ -19,7 +19,7 @@ const defaults = [
 let data;
 try { data = JSON.parse(localStorage.getItem('roots-v1')); } catch {}
 if (!data || !Array.isArray(data.habits) || !data.checks || !data.focus) data = { habits: defaults, checks: {}, focus: {} };
-let period = 'day', selectedDate = new Date(), filter = 'all', toastTimer;
+let period = 'day', selectedDate = new Date(), filter = 'all', toastTimer, animatedHabitId = null;
 const localDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 function key(date = selectedDate, mode = period) {
   const d = new Date(date);
@@ -29,10 +29,15 @@ function key(date = selectedDate, mode = period) {
   return `day:${localDate(d)}`;
 }
 function toast(message) { $('#toast').textContent = message; $('#toast').classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').classList.remove('visible'), 2600); }
-function animatePage() {
-  const content = document.querySelector('.content');
+function animateView() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  content.classList.remove('transition'); void content.offsetWidth; content.classList.add('transition');
+  ['#day-composition', '#period-planner', '.habit-panel'].forEach(selector => {
+    const element = $(selector);
+    if (!element.hidden) element.animate(
+      [{ opacity: 0.65, transform: 'translateY(8px)' }, { opacity: 1, transform: 'translateY(0)' }],
+      { duration: 340, easing: 'cubic-bezier(.22, 1, .36, 1)' }
+    );
+  });
 }
 function save() { try { localStorage.setItem('roots-v1', JSON.stringify(data)); } catch { toast('Не удалось сохранить данные. Проверьте доступ к хранилищу браузера.'); } }
 function dateLabel() {
@@ -66,7 +71,7 @@ function toggleDailyHabit(id, date = selectedDate) {
   const checks = data.checks[key(date, 'day')] || (data.checks[key(date, 'day')] = {});
   const completed = !checks[id]; checks[id] = completed;
   if (completed && navigator.vibrate) navigator.vibrate(10);
-  save(); render(); toast(completed ? 'Привычка отмечена' : 'Отметка снята');
+  animatedHabitId = id; save(); render(); animatedHabitId = null;
 }
 function aggregate(days) {
   return days.reduce((summary, day) => { const item = dailySummary(day); summary.done += item.done; summary.total += item.total; return summary; }, { done: 0, total: 0 });
@@ -140,7 +145,7 @@ function renderDayComposition() {
     const group = habits.filter(h => aspectFor(h) === aspect.key), panel = document.createElement('section'); panel.className = `aspect-panel aspect-${aspect.key}`;
     const label = document.createElement('div'); label.className = 'aspect-label'; const name = document.createElement('strong'); name.textContent = aspect.name; const sub = document.createElement('span'); sub.textContent = aspect.subtitle; label.append(name, sub); panel.append(label);
     const segments = document.createElement('div'); segments.className = 'aspect-segments';
-    group.forEach(habit => { const segment = document.createElement('button'); segment.type = 'button'; segment.className = `aspect-segment${checks[habit.id] ? ' done' : ''}`; segment.setAttribute('aria-pressed', String(!!checks[habit.id])); segment.setAttribute('aria-label', `${checks[habit.id] ? 'Отменить выполнение' : 'Выполнить'}: ${habit.name}`); const check = document.createElement('i'); check.textContent = '✓'; const text = document.createElement('span'); text.textContent = habit.name; segment.append(check, text); segment.onclick = () => toggleDailyHabit(habit.id); segments.append(segment); });
+    group.forEach(habit => { const segment = document.createElement('button'); segment.type = 'button'; segment.className = `aspect-segment${checks[habit.id] ? ' done' : ''}${animatedHabitId === habit.id ? ' changed' : ''}`; segment.setAttribute('aria-pressed', String(!!checks[habit.id])); segment.setAttribute('aria-label', `${checks[habit.id] ? 'Отменить выполнение' : 'Выполнить'}: ${habit.name}`); const check = document.createElement('i'); check.textContent = '✓'; const text = document.createElement('span'); text.textContent = habit.name; segment.append(check, text); segment.onclick = () => toggleDailyHabit(habit.id); segments.append(segment); });
     if (!group.length) { const empty = document.createElement('span'); empty.className = 'aspect-empty'; empty.textContent = 'Добавь привычку'; segments.append(empty); }
     panel.append(segments); map.append(panel);
   });
@@ -162,9 +167,9 @@ function render() {
   const visible = habits.filter(h => filter === 'all' || (filter === 'done' ? checks[h.id] : !checks[h.id]));
   if (!visible.length) { const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = !habits.length ? 'Здесь вырастет что-то хорошее. Добавь первую привычку ♧' : filter === 'pending' ? 'Всё выполнено. Время выдохнуть ♧' : 'Пока нет выполненных привычек. Начни с маленького шага.'; list.append(empty); }
   visible.forEach(h => {
-    const row = document.createElement('div'); row.className = `habit-row${checks[h.id] ? ' done' : ''}`;
+    const row = document.createElement('div'); row.className = `habit-row${checks[h.id] ? ' done' : ''}${animatedHabitId === h.id ? ' changed' : ''}`;
     const check = document.createElement('button'); check.className = 'check'; check.textContent = '✓'; check.setAttribute('aria-label', `${checks[h.id] ? 'Отменить выполнение' : 'Выполнить'}: ${h.name}`); check.setAttribute('aria-pressed', String(!!checks[h.id]));
-    check.onclick = () => { if (period === 'day') toggleDailyHabit(h.id); else { const completed = !checks[h.id]; data.checks[key()] ||= {}; data.checks[key()][h.id] = completed; save(); render(); toast(completed ? 'Привычка отмечена' : 'Отметка снята'); } };
+    check.onclick = () => { if (period === 'day') toggleDailyHabit(h.id); else { data.checks[key()] ||= {}; data.checks[key()][h.id] = !checks[h.id]; animatedHabitId = h.id; save(); render(); animatedHabitId = null; } };
     const category = categories[h.category] || categories.mind;
     const icon = document.createElement('span'); icon.className = `habit-icon ${h.category}`; icon.textContent = category[1]; icon.setAttribute('aria-hidden', 'true');
     const info = document.createElement('div'); info.className = 'habit-info';
@@ -177,9 +182,9 @@ function render() {
     row.append(check, icon, info, tag, edit, remove); list.append(row);
   });
 }
-document.querySelectorAll('[data-period]').forEach(button => button.onclick = () => { period = button.dataset.period; filter = 'all'; document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('active', b === button)); document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); animatePage(); render(); });
+document.querySelectorAll('[data-period]').forEach(button => button.onclick = () => { period = button.dataset.period; filter = 'all'; document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('active', b === button)); document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); render(); animateView(); });
 document.querySelectorAll('[data-filter]').forEach(button => button.onclick = () => { filter = button.dataset.filter; document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b === button)); render(); });
-function move(direction) { const d = new Date(selectedDate); if (period === 'day' || period === 'week') d.setDate(d.getDate() + direction * (period === 'week' ? 7 : 1)); if (period === 'month') { d.setDate(1); d.setMonth(d.getMonth() + direction); } if (period === 'year') { d.setDate(1); d.setFullYear(d.getFullYear() + direction); } selectedDate = d; render(); }
+function move(direction) { const d = new Date(selectedDate); if (period === 'day' || period === 'week') d.setDate(d.getDate() + direction * (period === 'week' ? 7 : 1)); if (period === 'month') { d.setDate(1); d.setMonth(d.getMonth() + direction); } if (period === 'year') { d.setDate(1); d.setFullYear(d.getFullYear() + direction); } selectedDate = d; render(); animateView(); }
 $('#previous').onclick = () => move(-1); $('#next').onclick = () => move(1);
 $('#focus').addEventListener('input', e => { data.focus[key()] = e.target.value; save(); });
 const dialog = $('#habit-dialog'); let editingHabitId = null;
