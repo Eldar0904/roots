@@ -77,14 +77,22 @@ function trackedDays() {
   return [];
 }
 function plannerTitle() { return period === 'week' ? 'Ежедневный прогресс недели' : period === 'month' ? 'Календарь выполнения' : 'Прогресс по месяцам'; }
+function habitBoxes(day, compact = false) {
+  const checks = data.checks[key(day, 'day')] || {}, habits = data.habits.filter(h => h.period === 'day'), boxes = document.createElement('span');
+  boxes.className = `report-boxes${compact ? ' compact' : ''}`;
+  ['soil', 'green'].forEach(aspect => {
+    const group = document.createElement('span'); group.className = `report-group ${aspect}`;
+    habits.filter(h => aspectFor(h) === aspect).forEach(habit => { const box = document.createElement('i'); box.className = `report-box ${checks[habit.id] ? 'done' : ''}`; box.title = habit.name; box.setAttribute('aria-label', `${habit.name}: ${checks[habit.id] ? 'выполнено' : 'не выполнено'}`); group.append(box); });
+    if (group.childElementCount) boxes.append(group);
+  });
+  return boxes;
+}
 function dayCard(day, compact = false) {
   const stat = dailySummary(day), card = document.createElement('button');
   card.className = `planner-day${stat.done ? ' has-progress' : ''}${localDate(day) === localDate(new Date()) ? ' today' : ''}`;
   card.type = 'button'; card.setAttribute('aria-label', `${day.toLocaleDateString('ru-RU')}: ${stat.done} из ${stat.total}`);
   const name = document.createElement('span'); name.className = 'planner-day-name'; name.textContent = compact ? String(day.getDate()) : day.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
-  const count = document.createElement('strong'); count.textContent = `${stat.done}/${stat.total}`;
-  const bar = document.createElement('i'); bar.style.width = `${stat.total ? stat.done / stat.total * 100 : 0}%`;
-  card.append(name, count, bar);
+  card.append(name, habitBoxes(day, compact));
   card.onclick = () => { selectedDate = new Date(day); period = 'day'; filter = 'all'; document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('active', b.dataset.period === 'day')); document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); render(); };
   return card;
 }
@@ -94,7 +102,8 @@ function renderPlanner() {
   planner.hidden = false;
   const heading = document.createElement('div'); heading.className = 'planner-heading';
   const title = document.createElement('h3'); title.textContent = plannerTitle();
-  const note = document.createElement('span'); note.textContent = 'Отметки ежедневных привычек'; heading.append(title, note); planner.append(heading);
+  const note = document.createElement('span'); note.className = 'report-legend';
+  [['soil', 'Почва'], ['green', 'Рост']].forEach(([type, label]) => { const item = document.createElement('i'); item.className = type; item.textContent = label; note.append(item); }); heading.append(title, note); planner.append(heading);
   const grid = document.createElement('div');
   if (period === 'week') {
     grid.className = 'planner-grid week-planner'; trackedDays().forEach(day => grid.append(dayCard(day)));
@@ -162,9 +171,10 @@ function render() {
     const name = document.createElement('div'); name.className = 'habit-name'; name.textContent = h.name;
     const detail = document.createElement('div'); detail.className = 'habit-detail'; detail.textContent = h.detail; info.append(name, detail);
     const tag = document.createElement('span'); tag.className = `category ${h.category}`; tag.textContent = category[0];
+    const edit = document.createElement('button'); edit.className = 'edit'; edit.textContent = '✎'; edit.setAttribute('aria-label', `Редактировать привычку: ${h.name}`); edit.onclick = () => openHabitEditor(h);
     const remove = document.createElement('button'); remove.className = 'delete'; remove.textContent = '×'; remove.setAttribute('aria-label', `Удалить привычку: ${h.name}`);
     remove.onclick = () => { if (!confirm(`Удалить привычку «${h.name}» из всех периодов?`)) return; data.habits = data.habits.filter(item => item.id !== h.id); Object.values(data.checks).forEach(c => delete c[h.id]); save(); render(); toast('Привычка удалена'); };
-    row.append(check, icon, info, tag, remove); list.append(row);
+    row.append(check, icon, info, tag, edit, remove); list.append(row);
   });
 }
 document.querySelectorAll('[data-period]').forEach(button => button.onclick = () => { period = button.dataset.period; filter = 'all'; document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('active', b === button)); document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); animatePage(); render(); });
@@ -172,10 +182,16 @@ document.querySelectorAll('[data-filter]').forEach(button => button.onclick = ()
 function move(direction) { const d = new Date(selectedDate); if (period === 'day' || period === 'week') d.setDate(d.getDate() + direction * (period === 'week' ? 7 : 1)); if (period === 'month') { d.setDate(1); d.setMonth(d.getMonth() + direction); } if (period === 'year') { d.setDate(1); d.setFullYear(d.getFullYear() + direction); } selectedDate = d; render(); }
 $('#previous').onclick = () => move(-1); $('#next').onclick = () => move(1);
 $('#focus').addEventListener('input', e => { data.focus[key()] = e.target.value; save(); });
-const dialog = $('#habit-dialog');
-$('#add-habit').onclick = () => { $('#habit-form').reset(); dialog.showModal(); $('#habit-name').focus(); };
+const dialog = $('#habit-dialog'); let editingHabitId = null;
+function openHabitEditor(habit = null) {
+  editingHabitId = habit?.id || null; $('#habit-form').reset();
+  document.querySelector('.dialog-heading h2').textContent = habit ? 'Изменить привычку' : 'Добавить привычку';
+  if (habit) { $('#habit-name').value = habit.name; $('#habit-detail').value = habit.detail; $('#habit-category').value = habit.category; $('#habit-aspect').value = aspectFor(habit); }
+  dialog.showModal(); $('#habit-name').focus();
+}
+$('#add-habit').onclick = () => openHabitEditor();
 $('#close-dialog').onclick = $('#cancel-dialog').onclick = () => dialog.close();
 dialog.addEventListener('click', e => { if (e.target === dialog) { const r = dialog.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close(); } });
-$('#habit-form').onsubmit = e => { e.preventDefault(); const name = $('#habit-name').value.trim(); if (!name) { $('#habit-name').setCustomValidity('Введите название привычки'); $('#habit-name').reportValidity(); return; } data.habits.push({ id: crypto.randomUUID(), name, detail: $('#habit-detail').value.trim(), category: $('#habit-category').value, period }); filter = 'all'; document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); save(); dialog.close(); render(); toast('Новая привычка пустила корни ♧'); };
+$('#habit-form').onsubmit = e => { e.preventDefault(); const name = $('#habit-name').value.trim(); if (!name) { $('#habit-name').setCustomValidity('Введите название привычки'); $('#habit-name').reportValidity(); return; } const values = { name, detail: $('#habit-detail').value.trim(), category: $('#habit-category').value, aspect: $('#habit-aspect').value }; if (editingHabitId) Object.assign(data.habits.find(h => h.id === editingHabitId), values); else data.habits.push({ id: crypto.randomUUID(), ...values, period }); filter = 'all'; document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('selected', b.dataset.filter === 'all')); save(); dialog.close(); render(); toast(editingHabitId ? 'Привычка обновлена' : 'Новая привычка добавлена'); editingHabitId = null; };
 $('#habit-name').addEventListener('input', () => $('#habit-name').setCustomValidity(''));
 render();
